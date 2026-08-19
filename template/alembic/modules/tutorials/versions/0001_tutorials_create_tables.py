@@ -7,19 +7,26 @@ Create Date: 2026-07-09
 Chaîne du module tutorials. Crée `tutorials` et `lessons` (One-to-Many, Chap 4).
 L'enum `userrole` est déjà créé par la chaîne core -> create_type=False pour ne
 pas tenter de le recréer sous PostgreSQL.
+
+Utilise `postgresql.ENUM` (pas `sa.Enum` générique) : constaté en déploiement
+que `sa.Enum(..., create_type=False)` n'empêche pas `op.create_table` de
+retenter un `CREATE TYPE` (DuplicateObjectError) — le checkfirst du type
+générique ne fait pas la vraie introspection catalogue Postgres, contrairement
+à la classe dialecte-spécifique.
 """
 
 from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 revision: str = "0001_tutorials_tables"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-_userrole = sa.Enum(
+_userrole = postgresql.ENUM(
     "anonymous", "waitlist", "user", "premium", "admin",
     name="userrole",
     create_type=False,

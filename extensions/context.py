@@ -10,7 +10,6 @@ synchro générateur↔runtime est garantie par un test (test_generator_tiers_ma
 """
 
 import re
-import secrets
 
 import yaml
 
@@ -137,13 +136,12 @@ class TierResolver(ContextHook):
         )
         context["gunicorn_workers"] = WORKERS_BY_TIER.get(tier, 1)
 
-        # Secrets du projet, générés à la création (Chap 18 : « le mot de passe
-        # généré est injecté dans le .env du projet »). Aléatoires par projet :
-        # un compromis ne se propage jamais d'un projet à l'autre (Chap 18 §Sécu).
         # db_name : identifiant PostgreSQL valide (pas de tiret).
+        # secret_key / postgres_password : plus générés ici — ce sont de vraies
+        # questions Copier (voir copier.yml) depuis que la génération à chaque
+        # invocation (y compris `update`) cassait la base/session de chaque
+        # projet à chaque propagation de fix du chassis.
         context["db_name"] = re.sub(r"\W", "_", project_name)
-        context["secret_key"] = secrets.token_hex(32)
-        context["postgres_password"] = secrets.token_hex(24)
 
         profile = TIER_PROFILES.get(tier, {})
         # Overrides depuis config.yaml, clés courtes (agentic) sans préfixe.

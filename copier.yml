@@ -113,6 +113,27 @@ fleet:
   default:
     register: true
 
+# Secrets générés une fois à la création, puis IMMUABLES sur `copier update`.
+# Le default (calcul cryptographiquement sûr, SystemRandom via le filtre
+# ans_random — voir la dépréciation de `make_secret` dans Copier) n'est évalué
+# que s'il n'existe AUCUNE réponse antérieure : comportement natif d'une
+# question Copier (Question.get_default : la valeur de .copier-answers.yml
+# prime toujours sur le default), pas de logique custom nécessaire —
+# contrairement à l'ancienne génération dans le context hook (Chap 18), qui
+# régénérait une valeur À CHAQUE invocation, y compris `update`, cassant la
+# base/session de chaque projet à chaque propagation de fix du chassis.
+# PAS de `when: false` ici : empêche la persistance dans .copier-answers.yml
+# (testé empiriquement), ce qui annulerait tout l'intérêt de la question —
+# --defaults (toujours utilisé dans ce générateur) suffit à ne jamais
+# demander interactivement une chaîne hexadécimale aléatoire.
+secret_key:
+  type: str
+  default: "{{ 999999999999999999999999999999999|ans_random|hash('sha512') }}"
+
+postgres_password:
+  type: str
+  default: "{{ 999999999999999999999999999999999|ans_random|hash('sha512') }}"
+
 # _tasks : exécutés après la génération des fichiers (le « post » réel de Copier).
 # Conditionnés à la GÉNÉRATION INITIALE (_copier_operation == 'copy') — pas au
 # copier update, où c'est _migrations qui prend le relais.

@@ -11,11 +11,19 @@
 services:
   frontend:
     build:
+{%- if gitsky_tier == "t0" %}
+      # T0 : pas d'app React à builder (aucun module actif à afficher) — sert
+      # directement la vitrine Studio (HTML statique, Chap 24). Context =
+      # racine du projet (pas ./frontend) pour que le Dockerfile voie vitrine/.
+      context: .
+      dockerfile: frontend/Dockerfile.t0
+{%- else %}
       context: ./frontend
       args:
         # Vite inline VITE_API_URL dans le bundle au BUILD (Chap 21) : l'URL de
         # l'API doit donc arriver ici, pas dans environment:.
         VITE_API_URL: "https://api.{{ project_domain }}"
+{%- endif %}
     container_name: {{ project_name }}_frontend
     restart: unless-stopped
     labels:

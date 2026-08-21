@@ -11,9 +11,11 @@ __pycache__
 .pytest_cache
 .ruff_cache
 
-# Le frontend a son propre Dockerfile et son propre contexte.
+# Le frontend a son propre Dockerfile et son propre contexte (T1/T2) ; le
+# backend n'en a pas besoin. vitrine/ N'EST PAS exclu : le build T0 du
+# frontend (frontend/Dockerfile.t0) utilise CE contexte (racine du projet)
+# précisément pour pouvoir COPY vitrine/landing.html.
 frontend
-vitrine
 node_modules
 
 # Secrets et bases locales : ne JAMAIS entrer dans une image.

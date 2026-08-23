@@ -170,6 +170,7 @@ class TierResolver(ContextHook):
             "primary_color": "#4F46E5",
             "primary_foreground": "#FFFFFF",
             "font_family": "Inter",
+            "display_font_family": "Inter",
             **(branding or {}),
         }
 

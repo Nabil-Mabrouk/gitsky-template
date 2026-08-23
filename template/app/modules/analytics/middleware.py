@@ -11,6 +11,7 @@ from starlette.requests import Request
 
 from app.core import database
 from app.core.config import get_settings
+from app.core.http import real_client_ip
 from app.modules.analytics.geoip import geolocate, hash_ip
 from app.modules.analytics.models import Visit
 
@@ -26,10 +27,7 @@ class TrackingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         if request.url.path not in EXCLUDED_PATHS:
-            await self._store_visit(
-                request.client.host if request.client else "",
-                request.url.path,
-            )
+            await self._store_visit(real_client_ip(request), request.url.path)
         return response
 
     async def _store_visit(self, ip: str, path: str) -> None:

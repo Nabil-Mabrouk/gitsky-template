@@ -12,6 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 from app.core import database
+from app.core.http import real_client_ip
 from app.modules.security.detectors import detect_event
 from app.modules.security.models import SecurityEvent
 
@@ -45,7 +46,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                     SecurityEvent(
                         event_type=event["event_type"],
                         severity=event["severity"],
-                        ip_address=request.client.host if request.client else None,
+                        ip_address=real_client_ip(request) or None,
                         path=request.url.path,
                         user_agent=request.headers.get("user-agent"),
                         details=event["details"],

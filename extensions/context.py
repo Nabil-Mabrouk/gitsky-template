@@ -179,4 +179,5 @@ class TierResolver(ContextHook):
         context["landing"] = {
             "skin": landing.get("skin", "clean"),
             "blocks": landing.get("blocks", []),
+            "hero_image": landing.get("hero_image", ""),
         }

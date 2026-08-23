@@ -125,6 +125,14 @@
          donc venir en dernier pour gagner. */
       .hero--split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2.5rem; align-items: center; text-align: left; max-width: 1100px; }
       .hero--split .hero-panel { aspect-ratio: 4 / 3; border-radius: 1rem; background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--primary) 55%, var(--bg)), var(--primary) 70%); }
+      /* Image hero réelle (Round B) : même sélecteur .hero-panel que le
+         panneau dégradé (fallback si aucune image), donc <div> ET <img>
+         partagent aspect-ratio/border-radius ci-dessus. width/height/
+         object-fit ne s'appliquent qu'à l'<img> (éléments remplacés) — sans
+         eux une image ne remplirait pas sa cellule de grille comme le <div>
+         le fait nativement (stretch par défaut). */
+      img.hero-panel { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .hero-image { display: block; width: 100%; max-width: 100%; border-radius: 1rem; margin-top: 2rem; aspect-ratio: 16 / 9; object-fit: cover; }
       @media (max-width: 720px) {
         .hero--split { grid-template-columns: 1fr; text-align: center; }
         .hero--split .hero-panel { order: -1; aspect-ratio: 16 / 9; }
@@ -224,13 +232,20 @@
         <a class="btn" href="{{ block.cta_primary.target }}">{{ block.cta_primary.label }}</a>
         {% endif %}
       </div>
+      {% if landing.hero_image %}
+      <img class="hero-panel" src="{{ landing.hero_image }}" alt="" />
+      {% else %}
       <div class="hero-panel" aria-hidden="true"></div>
+      {% endif %}
       {% else %}
       {% if block.badge %}<p class="badge">{{ block.badge }}</p>{% endif %}
       <h1>{{ block.headline }}</h1>
       <p>{{ block.subhead }}</p>
       {% if block.cta_primary %}
       <a class="btn" href="{{ block.cta_primary.target }}">{{ block.cta_primary.label }}</a>
+      {% endif %}
+      {% if landing.hero_image %}
+      <img class="hero-image" src="{{ landing.hero_image }}" alt="" />
       {% endif %}
       {% endif %}
     </section>

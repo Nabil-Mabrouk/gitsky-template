@@ -27,7 +27,37 @@
     "nav": "Admin",
     "tabs": {
       "fleet": "Fleet",
+      "analytics": "Analytics",
+      "security": "Security",
       "tutorials": "Tutorials"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "loading": "Loading…",
+      "empty": "No data yet.",
+      "error": "Could not load the data.",
+      "visits": "Visits",
+      "world": { "title": "Visits by country", "country": "Country" },
+      "paths": { "title": "Most visited pages", "path": "Page" },
+      "timeline": { "title": "Visits by day", "date": "Date" }
+    },
+    "security": {
+      "title": "Security",
+      "loading": "Loading…",
+      "error": "Could not load the data.",
+      "total": "Total",
+      "events": {
+        "title": "Recent events",
+        "allSeverities": "All severities",
+        "empty": "No events yet.",
+        "columns": {
+          "type": "Type",
+          "severity": "Severity",
+          "ip": "IP",
+          "path": "Path",
+          "date": "Date"
+        }
+      }
     }
   },
   "fleet": {

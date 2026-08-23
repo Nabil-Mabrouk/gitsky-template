@@ -27,7 +27,37 @@
     "nav": "Admin",
     "tabs": {
       "fleet": "Flotte",
+      "analytics": "Analytics",
+      "security": "Sécurité",
       "tutorials": "Tutoriels"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "loading": "Chargement…",
+      "empty": "Aucune donnée pour l'instant.",
+      "error": "Impossible de charger les données.",
+      "visits": "Visites",
+      "world": { "title": "Visites par pays", "country": "Pays" },
+      "paths": { "title": "Pages les plus visitées", "path": "Page" },
+      "timeline": { "title": "Visites par jour", "date": "Date" }
+    },
+    "security": {
+      "title": "Sécurité",
+      "loading": "Chargement…",
+      "error": "Impossible de charger les données.",
+      "total": "Total",
+      "events": {
+        "title": "Événements récents",
+        "allSeverities": "Toutes sévérités",
+        "empty": "Aucun événement pour l'instant.",
+        "columns": {
+          "type": "Type",
+          "severity": "Sévérité",
+          "ip": "IP",
+          "path": "Page",
+          "date": "Date"
+        }
+      }
     }
   },
   "fleet": {

@@ -10,13 +10,17 @@ interface Tab {
   moduleFlag: string;
 }
 
-// Onglets de ce round (Chap 9) — Utilisateurs/Waitlist/Analytics/Sécurité/
-// Boutique restent hors périmètre : ni page ni backend n'existent encore
-// pour eux. Ajouter un onglet plus tard = une entrée ici + sa route dans
-// App.tsx, rien d'autre à changer — la découverte des modules actifs est
-// déjà générique (GET /api/admin/modules).
+// Onglets de ce round (Chap 9) — Utilisateurs/Waitlist/Boutique restent hors
+// périmètre : ni page ni backend n'existent encore pour eux. Ajouter un
+// onglet plus tard = une entrée ici + sa route dans App.tsx, rien d'autre à
+// changer — la découverte des modules actifs est déjà générique
+// (GET /api/admin/modules).
+// moduleFlag "security_middleware" (pas "security") : GET /api/admin/modules
+// reflète les clés MODULE_FLAGS sans le préfixe "module_".
 const TABS: Tab[] = [
   { key: "fleet", labelKey: "admin.tabs.fleet", path: "/admin/fleet", moduleFlag: "fleet" },
+  { key: "analytics", labelKey: "admin.tabs.analytics", path: "/admin/analytics", moduleFlag: "analytics" },
+  { key: "security", labelKey: "admin.tabs.security", path: "/admin/security", moduleFlag: "security_middleware" },
   { key: "tutorials", labelKey: "admin.tabs.tutorials", path: "/learn", moduleFlag: "tutorials" },
 ];
 

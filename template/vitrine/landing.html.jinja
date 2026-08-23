@@ -12,12 +12,45 @@
       }
       /* Base partagée par tous les skins */
       body { margin: 0; color: #111; line-height: 1.5; }
-      section { padding: 3rem 1.5rem; max-width: 960px; margin: 0 auto; }
+      section { padding: 3rem 1.5rem; max-width: 960px; margin: 0 auto; position: relative; }
+      /* Alternance de fond légère : rythme visuel entre sections sans casser
+         le "HTML statique, pas de JS framework" du T0 (Chap 24). */
+      section:nth-of-type(even) { background: color-mix(in srgb, var(--primary) 6%, white); }
       .features ul, .faq ul, .pricing ul { list-style: none; padding: 0; display: grid; gap: 1rem; }
       .features li, .faq li, .pricing li { padding: 1rem; }
       blockquote { margin: 0; }
-      .btn { background: var(--primary); color: var(--on-primary); font: inherit; cursor: pointer; text-decoration: none; display: inline-block; }
+      .btn { background: var(--primary); color: var(--on-primary); font: inherit; cursor: pointer; text-decoration: none; display: inline-block; transition: transform 0.15s ease, opacity 0.15s ease; }
+      .btn:hover { transform: translateY(-1px); opacity: 0.9; }
       .badge { display: inline-block; font-size: 0.85rem; font-weight: 600; color: var(--primary); margin: 0 0 1rem; }
+
+      /* Barre de nav : sticky, marque + ancre vers la capture email. Chrome
+         générique (pas un bloc du manifest Studio), commun à tous les skins. */
+      .site-nav {
+        position: sticky; top: 0; z-index: 10;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1rem 1.5rem; background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(6px); border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+      .site-nav .brand { font-weight: 700; color: #111; text-decoration: none; font-family: var(--font), system-ui, sans-serif; }
+      .site-nav .btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+
+      /* Apparition douce au scroll — CSS pur (scroll-driven animations),
+         AUCUN JS : @supports dégrade proprement (contenu simplement visible,
+         jamais bloqué à opacity:0) sur les navigateurs qui ne le gèrent pas
+         encore. Un essai précédent en JS (classe .js + IntersectionObserver)
+         créait un vrai risque de flash "page presque invisible" le temps que
+         l'observer se déclenche sur une longue page — évité entièrement ici. */
+      @supports (animation-timeline: view()) {
+        section:not(.hero) {
+          animation: fade-in-up linear both;
+          animation-timeline: view();
+          animation-range: entry 0% cover 25%;
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      }
 
       {% if landing.skin == "editorial" %}
       /* skin: editorial — serif, aligné à gauche, grande typo */
@@ -28,6 +61,7 @@
       blockquote { font-size: 1.5rem; font-style: italic; border-left: 3px solid var(--primary); padding-left: 1rem; }
       .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 999px; }
       .features li, .faq li, .pricing li { border-bottom: 1px solid #ddd; }
+      .site-nav .brand { font-family: Georgia, "Times New Roman", var(--font), serif; font-style: italic; }
       {% elif landing.skin == "bold" %}
       /* skin: bold — brutaliste, contrasté, blocs anguleux */
       body { font-family: var(--font), system-ui, sans-serif; }
@@ -36,6 +70,8 @@
       section { border-bottom: 4px solid #111; }
       .btn { border: 3px solid #111; border-radius: 0; font-weight: 800; padding: 0.75rem 1.25rem; }
       .features li, .faq li, .pricing li { border: 3px solid #111; }
+      .site-nav { border-bottom: 4px solid #111; background: #fff; backdrop-filter: none; }
+      .site-nav .brand { text-transform: uppercase; font-weight: 900; }
       {% else %}
       /* skin: clean — SaaS minimal, sans-serif, centré */
       body { font-family: var(--font), system-ui, sans-serif; }
@@ -64,6 +100,11 @@
     </script>
   </head>
   <body>
+    {% set capture_block = landing.blocks | selectattr("type", "equalto", "email_capture") | list | first %}
+    <nav class="site-nav">
+      <a class="brand" href="#">{{ project_name }}</a>
+      {% if capture_block %}<a class="btn" href="#email-capture">{{ capture_block.cta }}</a>{% endif %}
+    </nav>
     {% for block in landing.blocks -%}
     {% if block.type == "hero" %}
     <section class="hero">
@@ -84,7 +125,7 @@
       </ul>
     </section>
     {% elif block.type == "email_capture" %}
-    <section class="capture" style="text-align:center">
+    <section class="capture" id="email-capture" style="text-align:center">
       {% if block.headline %}<h2>{{ block.headline }}</h2>{% endif %}
       {% if block.subhead %}<p>{{ block.subhead }}</p>{% endif %}
       <form onsubmit="return submitLead(event)" data-project="{{ project_name }}">

@@ -21,15 +21,45 @@
       "password": "Mot de passe",
       "submit": "Se connecter",
       "error": "Identifiants invalides"
+    },
+    "invite": {
+      "title": "Définir votre mot de passe",
+      "subtitle": "Choisissez un mot de passe pour activer votre compte.",
+      "password": "Mot de passe",
+      "confirm": "Confirmer le mot de passe",
+      "submit": "Activer mon compte",
+      "error": "Invitation invalide"
     }
   },
   "admin": {
     "nav": "Admin",
     "tabs": {
       "fleet": "Flotte",
+      "users": "Utilisateurs",
+      "waitlist": "Waitlist",
       "analytics": "Analytics",
       "security": "Sécurité",
       "tutorials": "Tutoriels"
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "loading": "Chargement…",
+      "empty": "Aucun utilisateur pour l'instant.",
+      "error": "Impossible de charger les utilisateurs.",
+      "active": "Actif",
+      "suspended": "Suspendu",
+      "suspend": "Suspendre",
+      "reactivate": "Réactiver",
+      "columns": { "email": "Email", "role": "Rôle", "status": "Statut" }
+    },
+    "waitlist": {
+      "title": "Waitlist",
+      "loading": "Chargement…",
+      "empty": "Aucun compte en liste d'attente.",
+      "error": "Impossible de charger la waitlist.",
+      "invite": "Inviter",
+      "sent": "Envoyé",
+      "columns": { "email": "Email" }
     },
     "analytics": {
       "title": "Analytics",

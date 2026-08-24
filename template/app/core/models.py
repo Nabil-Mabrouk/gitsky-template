@@ -33,4 +33,10 @@ class User(Base):
     # émis — seul levier de révocation d'un JWT stateless (token volé,
     # « déconnexion partout », changement de mot de passe).
     token_version = Column(Integer, nullable=False, default=0, server_default="0")
+    # Jeton d'invitation Waitlist courant (Chap 9), stocké tel quel (pas juste
+    # sa signature) : comparé à égalité stricte à l'acceptation, ce qui donne
+    # à la fois l'invalidation d'un lien remplacé par un renvoi et l'usage
+    # unique (remis à None après acceptation) sans logique de révocation
+    # séparée — le jeton lui-même reste un JWT signé/expirant classique.
+    invite_token = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

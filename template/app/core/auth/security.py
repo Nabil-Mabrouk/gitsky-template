@@ -9,6 +9,7 @@ Deux types de jetons signés HS256 avec `settings.secret_key` :
 Le champ `type` du payload empêche d'utiliser un refresh comme access.
 """
 
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -65,6 +66,22 @@ def create_refresh_token(
 ) -> str:
     delta = expires_delta or timedelta(days=settings.refresh_token_expire_days)
     return _create_token(subject, "refresh", delta, extra_claims or None)
+
+
+def create_invite_token(
+    subject: str | int,
+    expires_delta: timedelta | None = None,
+    **extra_claims: Any,
+) -> str:
+    """Jeton d'invitation Waitlist (Chap 9) — voir User.invite_token.
+
+    `jti` aléatoire : sans lui, deux invitations émises dans la même seconde
+    (résolution de `iat`/`exp` en JWT) produiraient un jeton strictement
+    identique, et un renvoi n'invaliderait alors pas vraiment le précédent.
+    """
+    delta = expires_delta or timedelta(days=7)
+    claims: dict[str, Any] = {"jti": uuid.uuid4().hex, **extra_claims}
+    return _create_token(subject, "invite", delta, claims)
 
 
 def decode_token(token: str, expected_type: str | None = None) -> dict[str, Any]:

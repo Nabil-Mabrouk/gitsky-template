@@ -18,6 +18,10 @@ interface AuthState {
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  // Recharge /me après qu'un access_token a été posé en dehors de login()
+  // (ex. AcceptInvite.tsx après une invitation Waitlist acceptée) — évite de
+  // dupliquer la logique déjà dans login() ci-dessous.
+  refreshUser: () => Promise<void>;
 }
 
 const API = import.meta.env.VITE_API_URL ?? "";
@@ -42,6 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  async function refreshUser(): Promise<void> {
+    const me = await apiFetch("/api/auth/me");
+    if (me.ok) setUser((await me.json()) as User);
+  }
+
   async function login(email: string, password: string): Promise<boolean> {
     const res = await fetch(`${API}/api/auth/login`, {
       method: "POST",
@@ -52,8 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.ok) return false;
     const data = (await res.json()) as { access_token: string };
     localStorage.setItem("access_token", data.access_token);
-    const me = await apiFetch("/api/auth/me");
-    if (me.ok) setUser((await me.json()) as User);
+    await refreshUser();
     return true;
   }
 
@@ -69,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

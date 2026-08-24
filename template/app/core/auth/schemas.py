@@ -32,3 +32,11 @@ class UserRead(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class AcceptInviteRequest(BaseModel):
+    """Acceptation d'une invitation Waitlist (Chap 9) : même politique de
+    mot de passe que RegisterRequest — c'est aussi une création de compte."""
+
+    token: str
+    password: str = Field(min_length=8)

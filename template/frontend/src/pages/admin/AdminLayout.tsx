@@ -10,15 +10,21 @@ interface Tab {
   moduleFlag: string;
 }
 
-// Onglets de ce round (Chap 9) — Utilisateurs/Waitlist/Boutique restent hors
-// périmètre : ni page ni backend n'existent encore pour eux. Ajouter un
-// onglet plus tard = une entrée ici + sa route dans App.tsx, rien d'autre à
-// changer — la découverte des modules actifs est déjà générique
-// (GET /api/admin/modules).
+// Boutique reste hors périmètre : ni page ni backend n'existent encore pour
+// lui. Ajouter un onglet plus tard = une entrée ici + sa route dans App.tsx,
+// rien d'autre à changer — la découverte des modules actifs est déjà
+// générique (GET /api/admin/modules).
 // moduleFlag "security_middleware" (pas "security") : GET /api/admin/modules
 // reflète les clés MODULE_FLAGS sans le préfixe "module_".
+// users/waitlist : onglets SHELL (Chap 9) — toujours présents dès que le
+// dashboard admin existe, pas liés à un module optionnel plus précis. D'où
+// moduleFlag "admin" (le shell lui-même) plutôt qu'un flag dédié qui
+// n'existe pas — GET /api/admin/modules n'est de toute façon joignable QUE
+// si module_admin, donc la clé "admin" y est forcément présente et vraie.
 const TABS: Tab[] = [
   { key: "fleet", labelKey: "admin.tabs.fleet", path: "/admin/fleet", moduleFlag: "fleet" },
+  { key: "users", labelKey: "admin.tabs.users", path: "/admin/users", moduleFlag: "admin" },
+  { key: "waitlist", labelKey: "admin.tabs.waitlist", path: "/admin/waitlist", moduleFlag: "admin" },
   { key: "analytics", labelKey: "admin.tabs.analytics", path: "/admin/analytics", moduleFlag: "analytics" },
   { key: "security", labelKey: "admin.tabs.security", path: "/admin/security", moduleFlag: "security_middleware" },
   { key: "tutorials", labelKey: "admin.tabs.tutorials", path: "/learn", moduleFlag: "tutorials" },

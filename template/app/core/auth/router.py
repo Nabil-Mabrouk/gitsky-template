@@ -12,7 +12,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import get_current_user
-from app.core.auth.schemas import Credentials, RegisterRequest, Token, UserRead
+from app.core.auth.schemas import (
+    AcceptInviteRequest,
+    Credentials,
+    RegisterRequest,
+    Token,
+    UserRead,
+)
 from app.core.auth.security import (
     create_access_token,
     create_refresh_token,
@@ -22,7 +28,7 @@ from app.core.auth.security import (
 )
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.models import User
+from app.core.models import User, UserRole
 
 router = APIRouter()
 settings = get_settings()
@@ -56,6 +62,49 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
     await db.commit()
     await db.refresh(user)
     return user
+
+
+@router.post("/accept-invite", response_model=Token)
+async def accept_invite(
+    payload: AcceptInviteRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> Token:
+    """Acceptation d'une invitation Waitlist (Chap 9) — public, aucune auth.
+
+    Un jeton toujours valide (signature + expiration) mais remplacé par un
+    renvoi, ou déjà consommé par un accept précédent, est rejeté par la
+    comparaison stricte à `user.invite_token`. Message d'erreur générique
+    dans tous les cas (jeton invalide / expiré / déjà utilisé) — ne pas
+    révéler à un tiers qui aurait intercepté un vieux lien lequel des trois.
+    """
+    try:
+        decoded = decode_token(payload.token, expected_type="invite")
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invitation invalide"
+        )
+
+    user = await db.get(User, int(decoded["sub"]))
+    if (
+        user is None
+        or user.role != UserRole.waitlist
+        or payload.token != user.invite_token
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invitation invalide"
+        )
+
+    user.hashed_password = hash_password(payload.password)
+    user.role = UserRole.user
+    user.invite_token = None
+    await db.commit()
+
+    # Onboarding en un geste : connecte directement, même motif que /login.
+    _set_refresh_cookie(
+        response, create_refresh_token(user.id, tv=user.token_version)
+    )
+    return Token(access_token=create_access_token(user.id, role=user.role.value))
 
 
 @router.post("/login", response_model=Token)

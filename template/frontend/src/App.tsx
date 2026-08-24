@@ -6,10 +6,13 @@ import Login from "./pages/Login";
 import FleetGrid from "./pages/FleetGrid";
 import Analytics from "./pages/admin/Analytics";
 import Security from "./pages/admin/Security";
+import Users from "./pages/admin/Users";
+import Waitlist from "./pages/admin/Waitlist";
 import TutorialDetail from "./pages/TutorialDetail";
 import LessonView from "./pages/LessonView";
 import AdminRoute from "./pages/admin/AdminRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
+import AcceptInvite from "./pages/AcceptInvite";
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -46,10 +49,13 @@ export default function App() {
           <Route path="/learn/:slug" element={<TutorialDetail />} />
           <Route path="/learn/:slug/lessons/:lessonId" element={<LessonView />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/invite/:token" element={<AcceptInvite />} />
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="fleet" replace />} />
               <Route path="fleet" element={<FleetGrid />} />
+              <Route path="users" element={<Users />} />
+              <Route path="waitlist" element={<Waitlist />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="security" element={<Security />} />
             </Route>

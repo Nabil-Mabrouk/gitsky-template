@@ -21,15 +21,45 @@
       "password": "Password",
       "submit": "Sign in",
       "error": "Invalid credentials"
+    },
+    "invite": {
+      "title": "Set your password",
+      "subtitle": "Choose a password to activate your account.",
+      "password": "Password",
+      "confirm": "Confirm password",
+      "submit": "Activate my account",
+      "error": "Invalid invitation"
     }
   },
   "admin": {
     "nav": "Admin",
     "tabs": {
       "fleet": "Fleet",
+      "users": "Users",
+      "waitlist": "Waitlist",
       "analytics": "Analytics",
       "security": "Security",
       "tutorials": "Tutorials"
+    },
+    "users": {
+      "title": "Users",
+      "loading": "Loading…",
+      "empty": "No users yet.",
+      "error": "Could not load the users.",
+      "active": "Active",
+      "suspended": "Suspended",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "columns": { "email": "Email", "role": "Role", "status": "Status" }
+    },
+    "waitlist": {
+      "title": "Waitlist",
+      "loading": "Loading…",
+      "empty": "No accounts on the waitlist.",
+      "error": "Could not load the waitlist.",
+      "invite": "Invite",
+      "sent": "Sent",
+      "columns": { "email": "Email" }
     },
     "analytics": {
       "title": "Analytics",

@@ -1,15 +1,28 @@
 """Routeur du module admin (Chap 9).
 
-Un seul endpoint : la découverte des modules actifs, consommée par
-AdminLayout côté frontend pour construire dynamiquement sa sidebar sans
-dupliquer la logique de résolution de tier déjà faite par Settings.
+/modules : la découverte des modules actifs, consommée par AdminLayout côté
+frontend pour construire dynamiquement sa sidebar sans dupliquer la logique
+de résolution de tier déjà faite par Settings.
+
+/users* : gestion des comptes (onglet Utilisateurs) et invitations Waitlist
+(onglet Waitlist) — les deux onglets SHELL du chap 9, toujours présents dès
+que le dashboard admin existe (donc montés ici, sous le même flag
+module_admin que /modules, plutôt que sous module_auth : un projet T1 sans
+dashboard n'a jamais de raison d'exposer ces endpoints).
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import mailer
 from app.core.auth.dependencies import require_admin
+from app.core.auth.schemas import UserRead
+from app.core.auth.security import create_invite_token
 from app.core.config import MODULE_FLAGS, get_settings
-from app.core.models import User
+from app.core.database import get_db
+from app.core.models import User, UserRole
+from app.modules.admin.schemas import UserUpdate
 
 router = APIRouter()
 
@@ -21,3 +34,69 @@ async def list_modules(_admin: User = Depends(require_admin)) -> dict[str, bool]
         flag.removeprefix("module_"): bool(getattr(settings, flag))
         for flag in MODULE_FLAGS
     }
+
+
+@router.get("/users", response_model=list[UserRead])
+async def list_users(
+    role: UserRole | None = None,
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+) -> list[User]:
+    stmt = select(User).order_by(User.email)
+    if role is not None:
+        stmt = stmt.where(User.role == role)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+@router.patch("/users/{user_id}", response_model=UserRead)
+async def update_user(
+    user_id: int,
+    payload: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+) -> User:
+    user = await db.get(User, user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable"
+        )
+    if payload.role is not None:
+        user.role = payload.role
+    if payload.is_active is not None:
+        user.is_active = payload.is_active
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+@router.post("/users/{user_id}/invite", status_code=status.HTTP_204_NO_CONTENT)
+async def invite_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+) -> None:
+    user = await db.get(User, user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable"
+        )
+    if user.role != UserRole.waitlist:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Seul un compte en liste d'attente peut être invité",
+        )
+
+    settings = get_settings()
+    # Écrase un jeton précédent : un renvoi invalide implicitement l'ancien
+    # lien (comparaison à égalité stricte côté accept-invite).
+    token = create_invite_token(user.id)
+    user.invite_token = token
+    await db.commit()
+
+    link = f"{settings.frontend_url}/invite/{token}"
+    mailer.send_email(
+        to=user.email,
+        subject=f"Invitation — {settings.project_name}",
+        body=f"Vous êtes invité·e à rejoindre {settings.project_name}.\n\n{link}\n\nCe lien expire dans 7 jours.",
+    )

@@ -8,6 +8,12 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
+// Utilisateur courant fixe (id 99) — n'entre jamais en collision avec les
+// lignes de test (id 1), donc n'active jamais le guard "isSelf" sauf test dédié.
+vi.mock("../../context/AuthContext", () => ({
+  useAuth: () => ({ user: { id: 99, email: "admin@example.com", role: "admin" } }),
+}));
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -81,5 +87,21 @@ describe("Users", () => {
     await userEvent.click(screen.getByText("admin.users.suspend"));
 
     await waitFor(() => expect(screen.getByText("admin.users.suspended")).toBeInTheDocument());
+  });
+
+  it("désactive les contrôles de rôle/statut pour son propre compte", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      jsonResponse([
+        { id: 99, email: "admin@example.com", role: "admin", is_active: true },
+      ]),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<Users />);
+
+    await waitFor(() => expect(screen.getByText("admin@example.com")).toBeInTheDocument());
+    expect(screen.getByText(/admin\.users\.you/)).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toBeDisabled();
+    expect(screen.getByText("admin.users.suspend")).toBeDisabled();
   });
 });

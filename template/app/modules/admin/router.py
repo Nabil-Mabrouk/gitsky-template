@@ -61,6 +61,20 @@ async def update_user(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable"
         )
+    # Un admin qui se retire son propre rôle ou se désactive se verrouille
+    # hors du dashboard qui seul permet de revenir en arrière (bug réel
+    # rencontré en prod : nécessite alors une correction manuelle en base).
+    if (
+        user.id == _admin.id
+        and (
+            (payload.role is not None and payload.role != UserRole.admin)
+            or payload.is_active is False
+        )
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Impossible de modifier votre propre rôle ou statut administrateur",
+        )
     if payload.role is not None:
         user.role = payload.role
     if payload.is_active is not None:

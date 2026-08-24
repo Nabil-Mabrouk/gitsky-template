@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../api";
+import { useAuth } from "../../context/AuthContext";
 
 // Onglet Utilisateurs (Chap 9, shell) — modifier le rôle d'un compte ou
 // suspendre son accès. GET/PATCH /api/admin/users, require_admin côté API.
@@ -15,6 +16,7 @@ interface UserRow {
 
 export default function Users() {
   const { t } = useTranslation();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserRow[] | null>(null);
   const [error, setError] = useState(false);
 
@@ -54,35 +56,47 @@ export default function Users() {
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-b">
-              <td className="p-2">{u.email}</td>
-              <td className="p-2">
-                <select
-                  value={u.role}
-                  onChange={(e) => updateUser(u.id, { role: e.target.value as UserRow["role"] })}
-                  className="rounded border p-1 text-sm"
-                >
-                  {ROLES.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td className="p-2">
-                {u.is_active ? t("admin.users.active") : t("admin.users.suspended")}
-              </td>
-              <td className="p-2">
-                <button
-                  onClick={() => updateUser(u.id, { is_active: !u.is_active })}
-                  className="rounded border p-1 text-sm hover:bg-black/5"
-                >
-                  {u.is_active ? t("admin.users.suspend") : t("admin.users.reactivate")}
-                </button>
-              </td>
-            </tr>
-          ))}
+          {users.map((u) => {
+            // L'API refuse qu'un admin change son propre rôle ou se
+            // désactive (verrouillage hors dashboard sinon) — la même
+            // restriction est appliquée ici pour ne pas exposer des
+            // contrôles qui échoueraient systématiquement en 400.
+            const isSelf = u.id === currentUser?.id;
+            return (
+              <tr key={u.id} className="border-b">
+                <td className="p-2">
+                  {u.email}
+                  {isSelf && <span className="ml-1 text-black/40">({t("admin.users.you")})</span>}
+                </td>
+                <td className="p-2">
+                  <select
+                    value={u.role}
+                    disabled={isSelf}
+                    onChange={(e) => updateUser(u.id, { role: e.target.value as UserRow["role"] })}
+                    className="rounded border p-1 text-sm disabled:opacity-50"
+                  >
+                    {ROLES.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="p-2">
+                  {u.is_active ? t("admin.users.active") : t("admin.users.suspended")}
+                </td>
+                <td className="p-2">
+                  <button
+                    onClick={() => updateUser(u.id, { is_active: !u.is_active })}
+                    disabled={isSelf}
+                    className="rounded border p-1 text-sm hover:bg-black/5 disabled:opacity-50"
+                  >
+                    {u.is_active ? t("admin.users.suspend") : t("admin.users.reactivate")}
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

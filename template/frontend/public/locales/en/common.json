@@ -50,6 +50,7 @@
       "suspended": "Suspended",
       "suspend": "Suspend",
       "reactivate": "Reactivate",
+      "you": "you",
       "columns": { "email": "Email", "role": "Role", "status": "Status" }
     },
     "waitlist": {

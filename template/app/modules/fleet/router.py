@@ -18,13 +18,14 @@ from app.core.auth.dependencies import require_admin
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.models import User
-from app.modules.fleet import health_monitor, kill_check, publish
+from app.modules.fleet import health_monitor, kill_check, landing_collector_client, publish
 from app.modules.fleet.models import FleetLifecycleEvent, Project
 from app.modules.fleet.schemas import (
     HealthSweepRequest,
     HealthSweepResult,
     KillCheckMetrics,
     KillCheckResult,
+    LeadRead,
     ProjectRegister,
     ProjectRead,
     PromoteRequest,
@@ -113,6 +114,14 @@ async def list_projects(
         stmt = stmt.where(Project.status == status)
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+@router.get("/projects/{name}/leads", response_model=list[LeadRead])
+async def project_leads(name: str, _admin: User = Depends(require_admin)) -> list[dict]:
+    # Lecture seule via le landing collector (Chap 19, onglet Leads) — pas de
+    # vérification que `name` correspond à un projet enregistré, même
+    # exposition qu'un /stats déjà pensé public-au-fleet.
+    return await landing_collector_client.fetch_leads(name)
 
 
 @router.post("/projects/{name}/kill-check", response_model=KillCheckResult)

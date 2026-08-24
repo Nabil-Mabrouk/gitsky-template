@@ -23,6 +23,7 @@ interface Tab {
 // si module_admin, donc la clé "admin" y est forcément présente et vraie.
 const TABS: Tab[] = [
   { key: "fleet", labelKey: "admin.tabs.fleet", path: "/admin/fleet", moduleFlag: "fleet" },
+  { key: "leads", labelKey: "admin.tabs.leads", path: "/admin/leads", moduleFlag: "fleet" },
   { key: "users", labelKey: "admin.tabs.users", path: "/admin/users", moduleFlag: "admin" },
   { key: "waitlist", labelKey: "admin.tabs.waitlist", path: "/admin/waitlist", moduleFlag: "admin" },
   { key: "analytics", labelKey: "admin.tabs.analytics", path: "/admin/analytics", moduleFlag: "analytics" },

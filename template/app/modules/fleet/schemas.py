@@ -69,3 +69,14 @@ class HealthSweepRequest(BaseModel):
 class HealthSweepResult(BaseModel):
     failed: list[str]
     recovered: list[str]
+
+
+class LeadRead(BaseModel):
+    # Miroir local de landing_collector.schemas.LeadOut (pas d'import
+    # cross-service — frontière déjà respectée partout ailleurs dans ce code).
+    id: int
+    project: str
+    email: str
+    source: str | None
+    utm_campaign: str | None
+    created_at: datetime | None

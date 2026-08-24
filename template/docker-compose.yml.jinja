@@ -89,6 +89,12 @@ services:
     networks:
       - proxy-net
       - internal-net
+{%- if resolved_modules.module_fleet %}
+      # Lecture directe du landing collector partagé (Chap 19, onglet Leads) :
+      # seul module fleet en a besoin — un T0/T1/T2 ordinaire n'a aucune
+      # raison de joindre ce réseau interne à la flotte.
+      - shared-services-net
+{%- endif %}
 {%- if gitsky_tier != "t0" %}
     depends_on:
       db:
@@ -149,6 +155,15 @@ networks:
   internal-net:
     driver: bridge
     internal: true
+{%- if resolved_modules.module_fleet %}
+  # Réseau interne de shared_services (Chap 18) — jamais créé ici, seulement
+  # rejoint. Nom réel dépendant du nom de projet Compose de shared_services
+  # sur le serveur : vérifier avec `docker network ls` au premier déploiement
+  # et corriger SHARED_SERVICES_NETWORK dans .env si besoin.
+  shared-services-net:
+    external: true
+    name: ${SHARED_SERVICES_NETWORK:-shared_services_shared-services-net}
+{%- endif %}
 {%- if gitsky_tier != "t0" %}
 
 volumes:

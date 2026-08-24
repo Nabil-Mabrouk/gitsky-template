@@ -35,11 +35,20 @@
     "nav": "Admin",
     "tabs": {
       "fleet": "Flotte",
+      "leads": "Leads",
       "users": "Utilisateurs",
       "waitlist": "Waitlist",
       "analytics": "Analytics",
       "security": "Sécurité",
       "tutorials": "Tutoriels"
+    },
+    "leads": {
+      "title": "Leads",
+      "loading": "Chargement…",
+      "empty": "Aucun lead pour ce projet.",
+      "noProjects": "Aucun projet T0 enregistré.",
+      "error": "Impossible de charger les leads.",
+      "columns": { "email": "Email", "source": "Source", "date": "Date" }
     },
     "users": {
       "title": "Utilisateurs",

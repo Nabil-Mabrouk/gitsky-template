@@ -1,6 +1,7 @@
 """Schémas Pydantic du module fleet (Chap 5)."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -81,3 +82,21 @@ class LeadRead(BaseModel):
     utm_campaign: str | None
     created_at: datetime | None
     verified: bool
+
+
+class MaintenanceReport(BaseModel):
+    job: str
+    status: Literal["success", "failure"]
+    summary: str = ""
+    project: str | None = None
+
+
+class MaintenanceRunRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job: str
+    status: str
+    summary: str | None
+    project: str | None
+    created_at: datetime | None

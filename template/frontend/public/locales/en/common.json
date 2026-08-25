@@ -36,6 +36,7 @@
     "tabs": {
       "fleet": "Fleet",
       "leads": "Leads",
+      "maintenance": "Maintenance",
       "users": "Users",
       "waitlist": "Waitlist",
       "analytics": "Analytics",
@@ -49,6 +50,25 @@
       "noProjects": "No T0 project registered.",
       "error": "Could not load the leads.",
       "columns": { "email": "Email", "source": "Source", "date": "Date", "verified": "Verified" }
+    },
+    "maintenance": {
+      "title": "Maintenance",
+      "runsTitle": "Recent runs",
+      "scheduleTitle": "Schedule (read-only)",
+      "scheduleNote": "Changing the frequency is done on the server (crontab.fleet) — not from this table.",
+      "loading": "Loading…",
+      "empty": "No runs recorded yet.",
+      "error": "Could not load the runs.",
+      "success": "Success",
+      "failure": "Failure",
+      "columns": {
+        "job": "Job",
+        "status": "Status",
+        "summary": "Summary",
+        "project": "Project",
+        "date": "Date",
+        "frequency": "Frequency"
+      }
     },
     "users": {
       "title": "Users",

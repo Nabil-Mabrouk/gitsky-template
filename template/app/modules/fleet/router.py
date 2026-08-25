@@ -1,11 +1,15 @@
-"""Routeur du module fleet (Chap 19).
+"""Routeur du module fleet (Chap 19 / Chap 23).
 
 - POST /projects/register : inscription d'un projet (appelé par le générateur).
   Un projet « n'existe » dans la flotte que s'il est enregistré ici.
 - GET  /projects           : grille des projets (réservé à l'opérateur).
+- POST /maintenance/report : reporting des jobs de maintenance (Chap 23,
+  scripts shared_services/scripts/) — onglet Maintenance.
 Monté sous /api/fleet par le core (module_fleet, app dashboard uniquement).
 """
 
+import logging
+import os
 import secrets
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
@@ -14,23 +18,28 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from datetime import datetime, timezone
 
+from app.core import mailer
 from app.core.auth.dependencies import require_admin
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.models import User
 from app.modules.fleet import health_monitor, kill_check, landing_collector_client, publish
-from app.modules.fleet.models import FleetLifecycleEvent, Project
+from app.modules.fleet.models import FleetLifecycleEvent, MaintenanceRun, Project
 from app.modules.fleet.schemas import (
     HealthSweepRequest,
     HealthSweepResult,
     KillCheckMetrics,
     KillCheckResult,
     LeadRead,
+    MaintenanceReport,
+    MaintenanceRunRead,
     ProjectRegister,
     ProjectRead,
     PromoteRequest,
     PromoteResult,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -122,6 +131,60 @@ async def project_leads(name: str, _admin: User = Depends(require_admin)) -> lis
     # vérification que `name` correspond à un projet enregistré, même
     # exposition qu'un /stats déjà pensé public-au-fleet.
     return await landing_collector_client.fetch_leads(name)
+
+
+@router.post(
+    "/maintenance/report",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(verify_fleet_service_token)],
+)
+async def report_maintenance(
+    payload: MaintenanceReport, db: AsyncSession = Depends(get_db)
+) -> None:
+    """Reporting des jobs de maintenance (Chap 23, onglet Maintenance).
+
+    Même garde M2M que /register et /health-sweep : ce sont des scripts
+    shared_services/scripts/ non-interactifs, pas des sessions opérateur.
+    """
+    db.add(
+        MaintenanceRun(
+            job=payload.job,
+            status=payload.status,
+            summary=payload.summary,
+            project=payload.project,
+        )
+    )
+    await db.commit()
+
+    # L'alerte est un enrichissement, jamais un bloqueur — même raisonnement
+    # que le double opt-in des leads (Chap 18) : la ligne est déjà persistée
+    # au moment où on tente l'email, un échec d'envoi ne doit rien remettre
+    # en cause. Destinataire = SMTP_FROM : l'opérateur s'auto-alerte, pas de
+    # réglage dédié pour un opérateur seul.
+    if payload.status == "failure":
+        recipient = os.environ.get("SMTP_FROM", "")
+        if recipient:
+            try:
+                mailer.send_email(
+                    to=recipient,
+                    subject=f"[GitSky] Échec maintenance : {payload.job}",
+                    body=payload.summary or "(aucun détail fourni)",
+                )
+            except Exception:
+                logger.exception("Échec d'envoi de l'alerte maintenance pour %s", payload.job)
+
+
+@router.get("/maintenance/runs", response_model=list[MaintenanceRunRead])
+async def list_maintenance_runs(
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> list[MaintenanceRun]:
+    result = await db.execute(
+        select(MaintenanceRun)
+        .order_by(MaintenanceRun.created_at.desc(), MaintenanceRun.id.desc())
+        .limit(50)
+    )
+    return list(result.scalars().all())
 
 
 @router.post("/projects/{name}/kill-check", response_model=KillCheckResult)

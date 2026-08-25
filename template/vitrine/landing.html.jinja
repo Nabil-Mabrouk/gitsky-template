@@ -210,7 +210,7 @@
           const res = await fetch("/leads", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ project: "{{ project_name }}", email }),
+            body: JSON.stringify({ project: "{{ project_name }}", domain: "{{ project_domain }}", email }),
           });
           ok = res.ok;
         } catch (_) {}

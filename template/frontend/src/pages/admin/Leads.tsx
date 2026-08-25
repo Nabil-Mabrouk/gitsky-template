@@ -16,6 +16,7 @@ interface Lead {
   email: string;
   source: string | null;
   created_at: string | null;
+  verified: boolean;
 }
 
 export default function Leads() {
@@ -73,6 +74,7 @@ export default function Leads() {
               <th className="p-2 font-medium">{t("admin.leads.columns.email")}</th>
               <th className="p-2 font-medium">{t("admin.leads.columns.source")}</th>
               <th className="p-2 font-medium">{t("admin.leads.columns.date")}</th>
+              <th className="p-2 font-medium">{t("admin.leads.columns.verified")}</th>
             </tr>
           </thead>
           <tbody>
@@ -83,6 +85,7 @@ export default function Leads() {
                 <td className="p-2">
                   {lead.created_at ? new Date(lead.created_at).toLocaleString() : "—"}
                 </td>
+                <td className="p-2">{lead.verified ? "✓" : "—"}</td>
               </tr>
             ))}
           </tbody>

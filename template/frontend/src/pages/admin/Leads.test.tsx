@@ -38,6 +38,7 @@ describe("Leads", () => {
             email: "a@b.com",
             source: "reddit",
             created_at: "2026-08-01T00:00:00Z",
+            verified: true,
           },
         ]),
       );
@@ -47,6 +48,7 @@ describe("Leads", () => {
 
     await waitFor(() => expect(screen.getByText("a@b.com")).toBeInTheDocument());
     expect(screen.getByText("reddit")).toBeInTheDocument();
+    expect(screen.getByText("✓")).toBeInTheDocument();
 
     const select = screen.getByRole("combobox");
     expect(select).toHaveValue("pain-scraper");

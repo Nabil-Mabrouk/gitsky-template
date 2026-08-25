@@ -48,7 +48,7 @@
       "empty": "Aucun lead pour ce projet.",
       "noProjects": "Aucun projet T0 enregistré.",
       "error": "Impossible de charger les leads.",
-      "columns": { "email": "Email", "source": "Source", "date": "Date" }
+      "columns": { "email": "Email", "source": "Source", "date": "Date", "verified": "Vérifié" }
     },
     "users": {
       "title": "Utilisateurs",

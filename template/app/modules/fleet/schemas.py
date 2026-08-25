@@ -80,3 +80,4 @@ class LeadRead(BaseModel):
     source: str | None
     utm_campaign: str | None
     created_at: datetime | None
+    verified: bool

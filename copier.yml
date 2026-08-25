@@ -38,11 +38,17 @@ _exclude:
   - "*.db"
   - "*.sqlite3"
 
-# Frontière châssis/vitrine (Chap 24 — GitSky Studio) : la vitrine (landing
-# art-dirigée par projet) est générée UNE fois puis JAMAIS écrasée par
-# `copier update`. Le châssis (backend/app React) reste propagé normalement.
+# Frontière châssis/vitrine (Chap 24 — GitSky Studio) : la DONNÉE de la
+# landing art-dirigée par projet (skin/blocks/hero_image, produite une fois
+# par Studio) est générée UNE fois puis JAMAIS écrasée par `copier update` —
+# seul le fichier de données est protégé, pas les composants React qui la
+# consomment (frontend/src/pages/Landing.tsx, frontend/src/components/
+# blocks/**), qui reçoivent les correctifs de template normalement comme le
+# reste du châssis. Avant ce round, toute la vitrine (données ET rendu HTML
+# Jinja) vivait dans vitrine/** et était gelée en bloc — plus vrai depuis que
+# T0 rend la landing via l'app React partagée avec T1/T2 (React/Tailwind).
 _skip_if_exists:
-  - "vitrine/**"
+  - "frontend/src/landing-manifest.json"
 
 # Le TemplateExtensionLoader permet de référencer une extension par chemin
 # relatif au template (extensions/context.py) plutôt qu'un module installé.

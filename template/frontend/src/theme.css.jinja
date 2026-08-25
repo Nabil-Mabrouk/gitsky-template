@@ -4,4 +4,7 @@
   --color-primary: {{ branding.primary_color }};
   --color-primary-foreground: {{ branding.primary_foreground }};
   --font-family-base: "{{ branding.font_family }}", system-ui, sans-serif;
+  /* Utilisé par la landing (Chap 24, skins Studio) pour les titres — les
+     autres pages de l'app (admin, apprentissage) restent sur --font-family-base. */
+  --font-family-display: "{{ branding.display_font_family }}", var(--font-family-base);
 }

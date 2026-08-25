@@ -1,0 +1,63 @@
+{
+  "project": "mon-projet",
+  "domain": "mon-projet.mystudio.com",
+  "skin": "clean",
+  "hero_image": "",
+  "blocks": [
+    {
+      "type": "hero",
+      "id": "hero",
+      "layout": "centered",
+      "badge": "Nouveau",
+      "headline": "Bienvenue",
+      "subhead": "Une nouvelle idée à tester.",
+      "cta_primary": { "label": "Rejoindre la liste", "target": "#email-capture" }
+    },
+    {
+      "type": "features",
+      "id": "features",
+      "layout": "grid",
+      "headline": "Ce que ça change",
+      "items": [
+        { "title": "Rapide", "description": "Mise en route en quelques minutes." },
+        { "title": "Simple", "description": "Aucune configuration complexe." },
+        { "title": "Fiable", "description": "Testé et déployé en continu." }
+      ]
+    },
+    {
+      "type": "testimonial",
+      "id": "testimonial",
+      "layout": "card",
+      "quote": "Exactement ce dont j'avais besoin.",
+      "attribution": "Une cliente satisfaite"
+    },
+    {
+      "type": "faq",
+      "id": "faq",
+      "layout": "accordion",
+      "headline": "Questions fréquentes",
+      "items": [
+        { "question": "Est-ce gratuit ?", "answer": "Oui, pendant la phase bêta." },
+        { "question": "Quand ça sort ?", "answer": "Très bientôt." }
+      ]
+    },
+    {
+      "type": "pricing",
+      "id": "pricing",
+      "headline": "Tarifs",
+      "plans": [
+        { "name": "Gratuit", "price": "0€", "features": ["1 projet", "Support communautaire"] },
+        { "name": "Pro", "price": "29€/mois", "features": ["Projets illimités", "Support prioritaire"] }
+      ]
+    },
+    {
+      "type": "email_capture",
+      "id": "email-capture",
+      "headline": "Rejoignez la liste d'attente",
+      "subhead": "Soyez informé du lancement.",
+      "cta": "Rejoindre la liste",
+      "field_placeholder": "votre@email.com",
+      "legal_note": "Aucun spam, désinscription en un clic."
+    }
+  ]
+}

@@ -18,6 +18,14 @@ dist/
 *.db
 *.sqlite3
 
+# Fixture landing-manifest.json (Chap 24) copiée localement par les hooks npm
+# pre* (voir template/frontend/package.json) depuis dev-fixtures/ — jamais
+# committée ICI : seul landing-manifest.json.jinja doit vivre à ce chemin
+# dans l'arbre scanné par copier (_exclude filtre par chemin de DESTINATION,
+# donc un fichier littéral commité au même chemin entrerait en conflit avec
+# le rendu du .jinja dans tout projet généré).
+template/frontend/src/landing-manifest.json
+
 # OS
 .DS_Store
 Thumbs.db

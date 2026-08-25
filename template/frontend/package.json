@@ -4,11 +4,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "npm run --silent sync:landing-fixture",
     "build": "vite build",
+    "prebuild": "npm run --silent sync:landing-fixture",
     "typecheck": "tsc --noEmit",
+    "pretypecheck": "npm run --silent sync:landing-fixture",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "pretest": "npm run --silent sync:landing-fixture",
+    "test:watch": "vitest",
+    "pretest:watch": "npm run --silent sync:landing-fixture",
+    "sync:landing-fixture": "node -e \"const fs=require('fs');const p='src/landing-manifest.json';if(!fs.existsSync(p)){try{fs.copyFileSync('../../dev-fixtures/landing-manifest.json',p)}catch{}}\""
   },
   "dependencies": {
     "i18next": "^24.2.0",

@@ -1,0 +1,7 @@
+{
+  "project": {{ project_name | tojson }},
+  "domain": {{ project_domain | tojson }},
+  "skin": {{ landing.skin | tojson }},
+  "hero_image": {{ (landing.hero_image or "") | tojson }},
+  "blocks": {{ landing.blocks | tojson(indent=2) }}
+}

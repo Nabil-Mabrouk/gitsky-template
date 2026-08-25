@@ -199,17 +199,26 @@
     <script>
       // email_capture : POST same-origin /leads (Traefik route vers le
       // landing-collector partagé, Chap 18). Fonctionne pour N formulaires.
+      // Vérifie response.ok : un échec silencieux affichait "Merci !" même
+      // quand la capture avait réellement échoué côté serveur (bug réel,
+      // constaté en prod avant que la route Traefik n'existe).
       async function submitLead(e) {
         e.preventDefault();
         const email = e.target.querySelector('input[type=email]').value;
+        let ok = false;
         try {
-          await fetch("/leads", {
+          const res = await fetch("/leads", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ project: "{{ project_name }}", email }),
           });
+          ok = res.ok;
         } catch (_) {}
-        e.target.replaceWith(document.createTextNode("Merci !"));
+        e.target.replaceWith(
+          document.createTextNode(
+            ok ? "Merci !" : "Une erreur est survenue, réessayez plus tard."
+          )
+        );
         return false;
       }
     </script>

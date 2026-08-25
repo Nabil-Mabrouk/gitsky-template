@@ -133,6 +133,36 @@
         "status": "Statut",
         "publishStatus": "Statut de publication"
       }
+    },
+    "actions": {
+      "back": "← Retour à la flotte",
+      "loading": "Chargement…",
+      "notFound": "Projet introuvable.",
+      "killCheckTitle": "Kill check",
+      "runKillCheck": "Lancer le kill check",
+      "verdict": "Verdict",
+      "newStatus": "Nouveau statut",
+      "promoteTitle": "Promotion",
+      "guardrailsPass": "Guardrails passés",
+      "humanApproved": "Approbation humaine",
+      "runPromote": "Lancer la promotion",
+      "promoted": "Promu :",
+      "notPromoted": "Non promu :",
+      "fields": {
+        "days_since_deploy": "Jours depuis déploiement",
+        "signup_count": "Inscriptions",
+        "visit_count": "Visites",
+        "conversion_rate": "Taux de conversion",
+        "qualitative_feedback_count": "Retours qualitatifs",
+        "total_cost": "Coût total",
+        "active_users_last_7d": "Utilisateurs actifs (7j)",
+        "retention_d7": "Rétention J7",
+        "paid_users_count": "Utilisateurs payants",
+        "wtp_declarations": "Déclarations WTP",
+        "mrr": "MRR",
+        "churn_rate_3m": "Taux de churn (3m)",
+        "days_below_mrr_threshold": "Jours sous le seuil MRR"
+      }
     }
   }
 }

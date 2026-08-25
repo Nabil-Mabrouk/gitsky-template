@@ -4,6 +4,7 @@ import { useAuth } from "./context/AuthContext";
 import Learn from "./pages/Learn";
 import Login from "./pages/Login";
 import FleetGrid from "./pages/FleetGrid";
+import ProjectActions from "./pages/admin/ProjectActions";
 import Leads from "./pages/admin/Leads";
 import Maintenance from "./pages/admin/Maintenance";
 import Analytics from "./pages/admin/Analytics";
@@ -56,6 +57,7 @@ export default function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="fleet" replace />} />
               <Route path="fleet" element={<FleetGrid />} />
+              <Route path="fleet/:name" element={<ProjectActions />} />
               <Route path="leads" element={<Leads />} />
               <Route path="maintenance" element={<Maintenance />} />
               <Route path="users" element={<Users />} />

@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../api";
 
 // Grille de projets de la flotte (Chap 19) — vue MVP : liste triable de
-// GET /api/fleet/projects, réservée à l'admin côté API (require_admin). Les
-// onglets par projet, alertes et agrégation de coûts restent hors périmètre
-// (aucune source de données pour eux n'existe encore côté backend).
+// GET /api/fleet/projects, réservée à l'admin côté API (require_admin). Le
+// nom d'un projet ouvre sa page Actions (kill-check/promote, Round 4) — les
+// autres onglets par projet (Funnel/Métriques/Logs) et l'agrégation de coûts
+// restent hors périmètre (aucune source de données pour eux n'existe encore
+// côté backend).
 interface FleetProject {
   id: number;
   name: string;
@@ -96,7 +99,11 @@ export default function FleetGrid() {
         <tbody>
           {sorted.map((p) => (
             <tr key={p.id} className="border-b">
-              <td className="p-2">{p.name}</td>
+              <td className="p-2">
+                <Link to={`/admin/fleet/${p.name}`} className="underline">
+                  {p.name}
+                </Link>
+              </td>
               <td className="p-2 uppercase">{p.tier}</td>
               <td className="p-2">{p.domain ?? "—"}</td>
               <td className="p-2">{p.status}</td>

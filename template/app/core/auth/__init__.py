@@ -1,8 +1,8 @@
 """Module core `auth` (Chap 7).
 
-Actif dès le tier T1 (`MODULE_AUTH=true`). Ce paquet fournit les primitives de
-sécurité (hachage argon2, JWT access/refresh) ; le routeur FastAPI est ajouté
-dans un incrément ultérieur.
+Core (Chap 2 §1) : présent et actif dans tout projet, sans flag `MODULE_*`. Ce
+paquet fournit les primitives de sécurité (hachage argon2, JWT access/refresh)
+ainsi que le routeur FastAPI monté par `app.core.main`.
 """
 
 from app.core.auth.router import router

@@ -23,13 +23,11 @@ from app.core.auth.dependencies import require_admin
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.models import User
-from app.modules.fleet import health_monitor, kill_check, landing_collector_client, publish
+from app.modules.fleet import health_monitor, landing_collector_client, publish
 from app.modules.fleet.models import FleetLifecycleEvent, MaintenanceRun, Project
 from app.modules.fleet.schemas import (
     HealthSweepRequest,
     HealthSweepResult,
-    KillCheckMetrics,
-    KillCheckResult,
     LeadRead,
     MaintenanceReport,
     MaintenanceRunRead,
@@ -42,14 +40,6 @@ from app.modules.fleet.schemas import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-# Verdict -> (nouveau statut projet ou None, type d'événement journalisé ou None).
-_VERDICT_ACTIONS: dict[str, tuple[str | None, str | None]] = {
-    kill_check.HEALTHY: (None, None),
-    kill_check.PENDING_KILL: ("pending_kill", "pending_kill"),
-    kill_check.KILL_NOW: ("killed", "killed"),
-    kill_check.MANUAL_REVIEW: (None, "manual_review"),
-}
 
 
 async def verify_fleet_service_token(
@@ -92,18 +82,14 @@ async def register_project(
     if existing is None:
         project = Project(
             name=payload.name,
-            tier=payload.tier,
             domain=payload.domain,
             template_version=payload.template_version,
         )
         db.add(project)
         db.add(
-            FleetLifecycleEvent(
-                project_name=payload.name, event_type="born", tier=payload.tier
-            )
+            FleetLifecycleEvent(project_name=payload.name, event_type="born")
         )
     else:
-        existing.tier = payload.tier
         existing.domain = payload.domain
         existing.template_version = payload.template_version
         project = existing
@@ -187,41 +173,6 @@ async def list_maintenance_runs(
     return list(result.scalars().all())
 
 
-@router.post("/projects/{name}/kill-check", response_model=KillCheckResult)
-async def run_kill_check(
-    name: str,
-    metrics: KillCheckMetrics,
-    _admin: User = Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
-) -> KillCheckResult:
-    project = (
-        await db.execute(select(Project).where(Project.name == name))
-    ).scalar_one_or_none()
-    if project is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Projet introuvable"
-        )
-
-    verdict = kill_check.evaluate(project.tier, kill_check.Metrics(**metrics.model_dump()))
-    new_status, event_type = _VERDICT_ACTIONS[verdict]
-
-    if new_status is not None:
-        project.status = new_status
-    if event_type is not None:
-        db.add(
-            FleetLifecycleEvent(
-                project_name=project.name,
-                event_type=event_type,
-                tier=project.tier,
-                reason=f"kill_check verdict={verdict}",
-            )
-        )
-    await db.commit()
-    return KillCheckResult(
-        project=project.name, tier=project.tier, verdict=verdict, status=project.status
-    )
-
-
 @router.post(
     "/projects/health-sweep",
     response_model=HealthSweepResult,
@@ -257,7 +208,7 @@ async def promote(
 
     decision = publish.evaluate_promotion(
         project.publish_status,
-        project.tier,
+        project.domain or "",
         payload.guardrails_pass,
         payload.human_approved,
     )
@@ -267,7 +218,6 @@ async def promote(
             FleetLifecycleEvent(
                 project_name=project.name,
                 event_type=f"publish_{decision['target']}",
-                tier=project.tier,
                 reason=decision["reason"],
             )
         )

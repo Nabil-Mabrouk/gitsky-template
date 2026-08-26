@@ -1,4 +1,4 @@
-# docker-compose.dev.yml — DÉVELOPPEMENT LOCAL de {{ project_name }} ({{ gitsky_tier }}).
+# docker-compose.dev.yml — DÉVELOPPEMENT LOCAL de {{ project_name }}.
 #
 # Objectif : `docker compose -f docker-compose.dev.yml up` et l'app tourne — sans
 # Traefik, sans domaine, sans PostgreSQL. La PRODUCTION reste docker-compose.yml
@@ -8,7 +8,7 @@
 #
 # Deux différences clés avec la prod, toutes deux au service de la simplicité
 # locale :
-#   - base SQLite (aucun service Postgres à démarrer, quel que soit le tier) ;
+#   - base SQLite (aucun service Postgres à démarrer) ;
 #   - code source monté en volume -> hot-reload backend (uvicorn --reload) et
 #     frontend (Vite HMR), sans rebuild à chaque édition.
 #
@@ -22,7 +22,7 @@ services:
     command: uvicorn app.core.main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       # SQLite local dans /data (seul dossier inscriptible, cf. Dockerfile). La
-      # prod bascule sur Postgres via son propre compose (T1/T2).
+      # prod bascule sur Postgres via son propre compose.
       - DATABASE_URL=sqlite+aiosqlite:////data/gitsky.db
       - SECRET_KEY=dev-insecure-change-me-in-production-0123456789
       - ENVIRONMENT=development

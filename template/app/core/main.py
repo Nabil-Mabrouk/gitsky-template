@@ -64,11 +64,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Core : SEO (Chap 10). Présent à tous les tiers, pas de flag MODULE_*.
-# Monté à la racine : /sitemap.xml et /robots.txt doivent vivre à l'origine.
+# --- Core : SEO et authentification (Chap 2 §1). Présents dans tout projet,
+# pas de flag MODULE_* — au même titre que le shell FastAPI lui-même.
+# SEO monté à la racine : /sitemap.xml et /robots.txt doivent vivre à l'origine.
+from app.core.auth import router as auth_router  # noqa: E402
 from app.core.seo import router as seo_router  # noqa: E402
 
 app.include_router(seo_router, tags=["seo"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 
 # --- Modules optionnels : import à l'INTÉRIEUR du if (règle Chap 5 §3) ---
 
@@ -80,11 +83,6 @@ if settings.module_security_middleware:
     app.include_router(
         security_router, prefix="/api/admin/security", tags=["security"]
     )
-
-if settings.module_auth:
-    from app.core.auth import router as auth_router
-
-    app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 
 if settings.module_admin:
     from app.modules.admin import router as admin_router
@@ -172,9 +170,8 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict:
         "status": "ok",
         "database": "ok",
         "project": settings.project_name,
-        "tier": settings.gitsky_tier,
         "modules": {
-            "auth": settings.module_auth,
+            "auth": True,  # core, toujours actif (Chap 2 §1) — jamais un flag.
             "admin": settings.module_admin,
             "analytics": settings.module_analytics,
             "security_middleware": settings.module_security_middleware,

@@ -19,9 +19,8 @@ class Project(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
-    tier = Column(String, nullable=False)
     domain = Column(String)
-    status = Column(String, nullable=False, default="active")  # active/pending_kill/killed
+    status = Column(String, nullable=False, default="active")  # active/archived
     publish_status = Column(String, nullable=False, default="draft")  # draft/preview/live
     template_version = Column(String)
     first_deployed_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -33,8 +32,7 @@ class FleetLifecycleEvent(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     project_name = Column(String, index=True, nullable=False)
-    event_type = Column(String, nullable=False)  # born/promoted/pending_kill/killed
-    tier = Column(String)
+    event_type = Column(String, nullable=False)  # born/publish_*/deployment_failed/deployment_recovered/archived
     reason = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

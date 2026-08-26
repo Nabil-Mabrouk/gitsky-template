@@ -21,14 +21,14 @@ describe("Leads", () => {
     vi.restoreAllMocks();
   });
 
-  it("filtre les projets T0, sélectionne le premier et affiche ses leads", async () => {
+  it("liste tous les projets enregistrés, sélectionne le premier et affiche ses leads", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
         jsonResponse([
-          { name: "pain-scraper", tier: "t0" },
-          { name: "gitsky-app", tier: "t2" },
-          { name: "dead-idea", tier: "t0" },
+          { name: "pain-scraper" },
+          { name: "gitsky-app" },
+          { name: "dead-idea" },
         ]),
       )
       .mockResolvedValueOnce(
@@ -52,8 +52,8 @@ describe("Leads", () => {
 
     const select = screen.getByRole("combobox");
     expect(select).toHaveValue("pain-scraper");
-    // Seuls les projets T0 apparaissent dans le sélecteur.
-    expect(screen.queryByText("gitsky-app")).not.toBeInTheDocument();
+    // Tous les projets enregistrés apparaissent dans le sélecteur.
+    expect(screen.getByText("gitsky-app")).toBeInTheDocument();
 
     const lastCallUrl = fetchMock.mock.calls[1][0] as string;
     expect(lastCallUrl).toContain("/api/fleet/projects/pain-scraper/leads");
@@ -63,10 +63,7 @@ describe("Leads", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        jsonResponse([
-          { name: "pain-scraper", tier: "t0" },
-          { name: "dead-idea", tier: "t0" },
-        ]),
+        jsonResponse([{ name: "pain-scraper" }, { name: "dead-idea" }]),
       )
       .mockResolvedValueOnce(jsonResponse([]))
       .mockResolvedValueOnce(jsonResponse([]));
@@ -83,10 +80,8 @@ describe("Leads", () => {
     expect(lastCallUrl).toContain("/api/fleet/projects/dead-idea/leads");
   });
 
-  it("affiche un message si aucun projet T0 n'est enregistré", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(jsonResponse([{ name: "gitsky-app", tier: "t2" }]));
+  it("affiche un message si aucun projet n'est enregistré", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse([]));
     vi.stubGlobal("fetch", fetchMock);
 
     render(<Leads />);

@@ -1,8 +1,9 @@
 """Modèles du core (Chap 4).
 
-Deux entités toujours présentes dès que `MODULE_AUTH=true` (tier T1+) :
-l'énumération de rôles `UserRole` et le modèle `User`. En T0 (Landing), la table
-`users` n'est même pas créée — sa migration n'est pas appliquée (voir Chap 4).
+Deux entités toujours présentes, l'authentification étant core (Chap 2 §1) :
+l'énumération de rôles `UserRole` et le modèle `User`. Une landing minimale
+qui n'utilise jamais l'auth peut laisser la table `users` vide, mais sa
+migration reste appliquée dans tout projet (voir Chap 4).
 """
 
 import enum

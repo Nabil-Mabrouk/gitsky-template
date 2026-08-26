@@ -5,14 +5,12 @@ import { apiFetch } from "../api";
 
 // Grille de projets de la flotte (Chap 19) — vue MVP : liste triable de
 // GET /api/fleet/projects, réservée à l'admin côté API (require_admin). Le
-// nom d'un projet ouvre sa page Actions (kill-check/promote, Round 4) — les
-// autres onglets par projet (Funnel/Métriques/Logs) et l'agrégation de coûts
-// restent hors périmètre (aucune source de données pour eux n'existe encore
-// côté backend).
+// nom d'un projet ouvre sa page Actions (promote) — les autres onglets par
+// projet (Funnel/Métriques/Logs) et l'agrégation de coûts restent hors
+// périmètre (aucune source de données pour eux n'existe encore côté backend).
 interface FleetProject {
   id: number;
   name: string;
-  tier: string;
   domain: string | null;
   status: string;
   publish_status: string;
@@ -21,7 +19,7 @@ interface FleetProject {
 
 type SortKey = keyof Pick<
   FleetProject,
-  "name" | "tier" | "domain" | "status" | "publish_status"
+  "name" | "domain" | "status" | "publish_status"
 >;
 
 export default function FleetGrid() {
@@ -64,7 +62,6 @@ export default function FleetGrid() {
 
   const columns: { key: SortKey; label: string }[] = [
     { key: "name", label: t("fleet.grid.columns.name") },
-    { key: "tier", label: t("fleet.grid.columns.tier") },
     { key: "domain", label: t("fleet.grid.columns.domain") },
     { key: "status", label: t("fleet.grid.columns.status") },
     { key: "publish_status", label: t("fleet.grid.columns.publishStatus") },
@@ -104,7 +101,6 @@ export default function FleetGrid() {
                   {p.name}
                 </Link>
               </td>
-              <td className="p-2 uppercase">{p.tier}</td>
               <td className="p-2">{p.domain ?? "—"}</td>
               <td className="p-2">{p.status}</td>
               <td className="p-2">{p.publish_status}</td>

@@ -25,7 +25,6 @@ interface MaintenanceRun {
 const SCHEDULE = [
   { job: "fleet-health.sh", freq: "60 s" },
   { job: "backup-fleet.sh", freq: "Quotidien 02:00" },
-  { job: "kill-check", freq: "Quotidien 03:00" },
   { job: "fleet-disk.sh", freq: "Horaire" },
   { job: "docker image prune", freq: "Hebdo (dim 05:00)" },
   { job: "test-restore-fleet.sh", freq: "Mensuel (1er, 04:00)" },

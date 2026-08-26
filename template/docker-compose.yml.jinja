@@ -1,4 +1,4 @@
-# docker-compose.yml — PRODUCTION, généré pour {{ project_name }} ({{ gitsky_tier }}).
+# docker-compose.yml — PRODUCTION, généré pour {{ project_name }}.
 #
 # Le développement utilise docker-compose.dev.yml (hot-reload, ports exposés,
 # db exposée pour DBeaver). Ici : images buildées, rien d'exposé hors Traefik.
@@ -11,11 +11,9 @@
 services:
   frontend:
     build:
-      # Un seul chemin de build pour tous les tiers (écart au T0 précédent,
-      # qui servait du HTML statique) : depuis ce round, la landing T0 est une
-      # vraie route de l'app React partagée avec T1/T2 (Chap 24 — décision
-      # produit : cohérence du stack, réutilisation du code à la promotion de
-      # tier, plutôt que jeter la vitrine et repartir de zéro en T1).
+      # Un seul chemin de build pour tous les projets (Chap 24 — décision
+      # produit : cohérence du stack, réutilisation du code, plutôt que jeter
+      # la vitrine et repartir de zéro selon les modules activés).
       context: ./frontend
       args:
         # Vite inline VITE_API_URL dans le bundle au BUILD (Chap 21) : l'URL de
@@ -49,16 +47,9 @@ services:
     env_file:
       - .env
     environment:
-{%- if gitsky_tier == "t0" %}
-      # T0 : pas de base propre (Chap 18 §3) — les leads vont au collecteur
-      # partagé. Le backend garde un SQLite minimal (juste pour /health) dans
-      # /data, seul dossier inscriptible par appuser (le code /app est en RO).
-      - DATABASE_URL=sqlite+aiosqlite:////data/gitsky.db
-{%- else %}
-      # T1/T2 : chaque projet a SON conteneur PostgreSQL (isolation CPU/IO et
-      # plafond de connexions par projet — décision d'archi Phase 6, cf. Chap 18).
+      # Chaque projet a SON conteneur PostgreSQL, sans exception (isolation
+      # CPU/IO et plafond de connexions par projet — Chap 18 §2).
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-{%- endif %}
       - SECRET_KEY=${SECRET_KEY}
       - ENVIRONMENT=production
     labels:
@@ -67,12 +58,12 @@ services:
       - "traefik.http.routers.backend-{{ project_name }}.entrypoints=websecure"
       - "traefik.http.routers.backend-{{ project_name }}.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend-{{ project_name }}.loadbalancer.server.port=8000"
-{%- if resolved_modules.module_auth %}
       # Rate limiting du login AU NIVEAU INFRA (doctrine Chap 14 : l'app
       # journalise, Traefik/fail2ban bloquent). Routeur dédié plus prioritaire
       # que le routeur backend, même service : seule /api/auth/login est
       # limitée — chaque essai coûte un hachage argon2, sans limite c'est du
-      # credential stuffing et un DoS CPU à bas coût.
+      # credential stuffing et un DoS CPU à bas coût. Inconditionnel : l'auth
+      # est core, présente dans tout projet (Chap 2 §1).
       - "traefik.http.middlewares.authlimit-{{ project_name }}.ratelimit.average=5"
       - "traefik.http.middlewares.authlimit-{{ project_name }}.ratelimit.period=1m"
       - "traefik.http.middlewares.authlimit-{{ project_name }}.ratelimit.burst=10"
@@ -82,27 +73,24 @@ services:
       - "traefik.http.routers.authlimit-{{ project_name }}.priority=100"
       - "traefik.http.routers.authlimit-{{ project_name }}.middlewares=authlimit-{{ project_name }}"
       - "traefik.http.routers.authlimit-{{ project_name }}.service=backend-{{ project_name }}"
-{%- endif %}
     networks:
       - proxy-net
       - internal-net
 {%- if resolved_modules.module_fleet %}
       # Lecture directe du landing collector partagé (Chap 19, onglet Leads) :
-      # seul module fleet en a besoin — un T0/T1/T2 ordinaire n'a aucune
-      # raison de joindre ce réseau interne à la flotte.
+      # seul module fleet en a besoin — un projet ordinaire n'a aucune raison
+      # de joindre ce réseau interne à la flotte.
       - shared-services-net
 {%- endif %}
-{%- if gitsky_tier != "t0" %}
     depends_on:
       db:
         condition: service_healthy
-{%- endif %}
     logging:
       driver: "json-file"
       options:
         max-size: "50m"
         max-file: "5"
-{% if gitsky_tier != "t0" %}
+
   db:
     image: postgres:16.3-alpine
     container_name: {{ project_name }}_db
@@ -144,7 +132,7 @@ services:
       db:
         condition: service_healthy
     restart: "no"
-{% endif %}
+
 networks:
   proxy-net:
     external: true
@@ -161,8 +149,6 @@ networks:
     external: true
     name: ${SHARED_SERVICES_NETWORK:-shared_services_shared-services-net}
 {%- endif %}
-{%- if gitsky_tier != "t0" %}
 
 volumes:
   db_data:
-{%- endif %}

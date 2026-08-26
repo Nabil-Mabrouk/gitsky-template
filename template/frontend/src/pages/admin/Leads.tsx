@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../api";
 
-// Onglet Leads (Chap 19) — liste brute des emails captés par un projet T0
-// via GET /api/fleet/projects/{name}/leads (proxy vers le landing collector
+// Onglet Leads (Chap 19) — liste brute des emails captés par un projet via
+// GET /api/fleet/projects/{name}/leads (proxy vers le landing collector
 // partagé, require_admin côté API). Complète le compte agrégé déjà présent
 // sur la grille Flotte, sans le remplacer.
 interface FleetProject {
   name: string;
-  tier: string;
 }
 
 interface Lead {
@@ -30,9 +29,8 @@ export default function Leads() {
     apiFetch("/api/fleet/projects").then(async (r) => {
       if (!r.ok) return;
       const all = (await r.json()) as FleetProject[];
-      const t0 = all.filter((p) => p.tier === "t0");
-      setProjects(t0);
-      if (t0.length > 0) setSelected(t0[0].name);
+      setProjects(all);
+      if (all.length > 0) setSelected(all[0].name);
     });
   }, []);
 

@@ -1,12 +1,19 @@
 """Modèle de publication (Chap 24) — logique PURE.
 
 On barre l'étape IRRÉVERSIBLE (passage en live), jamais la génération.
-draft -> preview (toujours sûr, noindex) -> live (gate guardrails + blast radius).
-T0 (sous-domaine jetable) : auto-live si guardrails OK. T1+/domaine dédié :
-approbation humaine obligatoire (human-in-the-loop).
+draft -> preview (toujours sûr, noindex) -> live (gate guardrails + blast
+radius). Sous-domaine de la flotte (jetable) : auto-live si guardrails OK.
+Domaine dédié : approbation humaine obligatoire (human-in-the-loop) — le
+blast radius d'un domaine dédié (souvent une campagne payante, un budget
+engagé) justifie la revue qu'un sous-domaine jetable n'a pas besoin d'exiger.
 """
 
 from enum import Enum
+
+# Suffixe du domaine wildcard partagé de la flotte (Chap 1) — un projet sur ce
+# suffixe n'a pas encore de domaine dédié, donc rien d'irréversible à protéger
+# au-delà de ce que les guardrails couvrent déjà.
+FLEET_SUBDOMAIN_SUFFIX = ".mystudio.com"
 
 
 class PublishState(str, Enum):
@@ -17,7 +24,7 @@ class PublishState(str, Enum):
 
 def evaluate_promotion(
     current: str,
-    tier: str,
+    domain: str,
     guardrails_pass: bool,
     human_approved: bool = False,
 ) -> dict:
@@ -37,16 +44,21 @@ def evaluate_promotion(
                 "reason": "guardrails en échec — passage en live bloqué",
             }
         # Étape irréversible : gate par blast radius.
-        if tier == "t0" or human_approved:
+        on_fleet_subdomain = domain.endswith(FLEET_SUBDOMAIN_SUFFIX)
+        if on_fleet_subdomain or human_approved:
             return {
                 "allowed": True,
                 "target": PublishState.live.value,
-                "reason": "auto (T0 guardrailé)" if tier == "t0" else "approuvé humainement",
+                "reason": (
+                    "auto (sous-domaine de la flotte, guardrailé)"
+                    if on_fleet_subdomain
+                    else "approuvé humainement"
+                ),
             }
         return {
             "allowed": False,
             "target": PublishState.preview.value,
-            "reason": "revue humaine requise (blast radius T1+/domaine dédié)",
+            "reason": "revue humaine requise (blast radius domaine dédié)",
         }
 
     return {

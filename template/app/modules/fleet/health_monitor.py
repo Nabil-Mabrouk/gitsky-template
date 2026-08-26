@@ -5,9 +5,9 @@ par projet, l'horodatage du dernier succès. Ce module décide — à partir de 
 horodatages — quels projets sont MUETS (> 5 min) et journalise l'alerte
 `deployment_failed` du fleet dashboard (Chap 19), ainsi que la reprise.
 
-Séparation nette (comme `kill_check`) : la décision est PURE et testable ; l'I/O
-réseau (le poll HTTP) est faite par le poller, qui alimente `record_health_sweep`.
-Un seul événement par transition — pas un `deployment_failed` toutes les 60 s.
+Séparation nette : la décision est PURE et testable ; l'I/O réseau (le poll
+HTTP) est faite par le poller, qui alimente `record_health_sweep`. Un seul
+événement par transition — pas un `deployment_failed` toutes les 60 s.
 """
 
 from collections.abc import Mapping
@@ -66,10 +66,10 @@ async def record_health_sweep(
     - Un projet muet dont le dernier événement n'est pas déjà `deployment_failed`
       -> on émet `deployment_failed` (dédup : une seule alerte par panne).
     - Un projet redevenu joignable après une panne -> `deployment_recovered`.
-    - Les projets `killed` sont ignorés (un kill n'est pas une panne).
+    - Les projets `archived` sont ignorés (une archive n'est pas une panne).
     """
     projects = (
-        await db.execute(select(Project).where(Project.status != "killed"))
+        await db.execute(select(Project).where(Project.status != "archived"))
     ).scalars().all()
 
     changed: dict[str, list[str]] = {"failed": [], "recovered": []}
@@ -83,7 +83,6 @@ async def record_health_sweep(
                 FleetLifecycleEvent(
                     project_name=project.name,
                     event_type=DEPLOYMENT_FAILED,
-                    tier=project.tier,
                     reason="muet > 5 min sur /health",
                 )
             )
@@ -93,7 +92,6 @@ async def record_health_sweep(
                 FleetLifecycleEvent(
                     project_name=project.name,
                     event_type=DEPLOYMENT_RECOVERED,
-                    tier=project.tier,
                     reason="/health de nouveau joignable",
                 )
             )

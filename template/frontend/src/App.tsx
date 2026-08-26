@@ -23,26 +23,36 @@ import AcceptInvite from "./pages/AcceptInvite";
 export default function App() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
-  const [tier, setTier] = useState<string | null>(null);
+  const [modules, setModules] = useState<Record<string, boolean> | null>(null);
 
   useEffect(() => {
     apiFetch("/health")
-      .then(async (r) => (r.ok ? ((await r.json()) as { tier?: string }) : null))
-      .then((data) => setTier(data?.tier ?? ""))
-      .catch(() => setTier(""));
+      .then(async (r) =>
+        r.ok ? ((await r.json()) as { modules?: Record<string, boolean> }) : null,
+      )
+      .then((data) => setModules(data?.modules ?? {}))
+      .catch(() => setModules({}));
   }, []);
 
   const toggleLang = () =>
     i18n.changeLanguage(i18n.language.startsWith("fr") ? "en" : "fr");
 
-  // Décision au runtime, pas au build (Chap 24) : /health est public sur tous
-  // les tiers et renvoie déjà `tier` — évite de dupliquer le bundle par tier
-  // pour ce seul aspect (patron déjà établi par AdminLayout/`/api/admin/modules`).
-  if (tier === null) return null;
+  // Décision au runtime, pas au build (Chap 24) : /health est public et
+  // renvoie déjà `modules` — évite de dupliquer le bundle selon les modules
+  // actifs pour ce seul aspect (patron déjà établi par AdminLayout/
+  // `/api/admin/modules`).
+  if (modules === null) return null;
 
-  // T0 : la racine est une landing marketing autonome (nav + sections propres
-  // à Landing.tsx), pas l'app d'apprentissage — aucun chrome au-dessus.
-  if (tier === "t0") {
+  // Catalogue de modules à plat (Chap 2) : plus de palier T0/T1/T2. Un projet
+  // qui n'a activé aucun module au-delà du core (auth) n'a rien d'autre à
+  // naviguer qu'une landing marketing — pas de chrome de nav au-dessus.
+  // Remplace l'ancien clivage par tier ; un vrai redesign du dashboard reste
+  // prévu en Phase F.
+  const hasProductModules = Object.entries(modules).some(
+    ([key, active]) => key !== "auth" && active,
+  );
+
+  if (!hasProductModules) {
     return (
       <Routes>
         <Route path="/" element={<Landing />} />

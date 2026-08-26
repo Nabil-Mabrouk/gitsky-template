@@ -2,13 +2,14 @@
 
 /modules : la découverte des modules actifs, consommée par AdminLayout côté
 frontend pour construire dynamiquement sa sidebar sans dupliquer la logique
-de résolution de tier déjà faite par Settings.
+de résolution des flags déjà faite par Settings.
 
 /users* : gestion des comptes (onglet Utilisateurs) et invitations Waitlist
 (onglet Waitlist) — les deux onglets SHELL du chap 9, toujours présents dès
-que le dashboard admin existe (donc montés ici, sous le même flag
-module_admin que /modules, plutôt que sous module_auth : un projet T1 sans
-dashboard n'a jamais de raison d'exposer ces endpoints).
+que le dashboard admin existe (donc montés ici, sous le flag module_admin,
+plutôt que dépendre d'un module d'authentification séparé : l'auth est core,
+mais un projet sans dashboard admin n'a jamais de raison d'exposer ces
+endpoints).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status

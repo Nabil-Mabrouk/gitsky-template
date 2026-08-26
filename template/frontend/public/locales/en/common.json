@@ -128,7 +128,6 @@
       "error": "Could not load the fleet projects.",
       "columns": {
         "name": "Project",
-        "tier": "Tier",
         "domain": "Domain",
         "status": "Status",
         "publishStatus": "Publish status"
@@ -138,31 +137,12 @@
       "back": "← Back to fleet",
       "loading": "Loading…",
       "notFound": "Project not found.",
-      "killCheckTitle": "Kill check",
-      "runKillCheck": "Run kill check",
-      "verdict": "Verdict",
-      "newStatus": "New status",
       "promoteTitle": "Promotion",
       "guardrailsPass": "Guardrails passed",
       "humanApproved": "Human approved",
       "runPromote": "Run promotion",
       "promoted": "Promoted:",
-      "notPromoted": "Not promoted:",
-      "fields": {
-        "days_since_deploy": "Days since deploy",
-        "signup_count": "Signups",
-        "visit_count": "Visits",
-        "conversion_rate": "Conversion rate",
-        "qualitative_feedback_count": "Qualitative feedback",
-        "total_cost": "Total cost",
-        "active_users_last_7d": "Active users (7d)",
-        "retention_d7": "D7 retention",
-        "paid_users_count": "Paid users",
-        "wtp_declarations": "WTP declarations",
-        "mrr": "MRR",
-        "churn_rate_3m": "Churn rate (3m)",
-        "days_below_mrr_threshold": "Days below MRR threshold"
-      }
+      "notPromoted": "Not promoted:"
     }
   }
 }

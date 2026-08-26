@@ -1,8 +1,8 @@
 """Connexion base de données — SQLAlchemy **asynchrone** (Phase 1, Chap 3).
 
-Chaque projet GitSky possède sa propre base (isolation nette : vivre, migrer de
-tier, ou être arrêté sans impacter les autres). La session est fournie par
-injection de dépendance FastAPI via `get_db`.
+Chaque projet GitSky possède sa propre base (isolation nette : vivre, changer
+de modules, ou être arrêté sans impacter les autres). La session est fournie
+par injection de dépendance FastAPI via `get_db`.
 
 Stack async : `create_async_engine` + `async_sessionmaker` + `AsyncSession`.
 Driver prod = asyncpg (PostgreSQL) ; dev/tests = aiosqlite (SQLite).

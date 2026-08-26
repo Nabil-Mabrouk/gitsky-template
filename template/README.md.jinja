@@ -1,7 +1,8 @@
 # {{ project_name }}
 
-Projet **GitSky** de tier **{{ gitsky_tier }}**, généré par `create-gitsky-project`.
-Backend FastAPI (async) + frontend React/Vite, modules activés selon le tier.
+Projet **GitSky**, généré par `create-gitsky-project`.
+Backend FastAPI (async) + frontend React/Vite, modules activés selon le
+catalogue du projet (Chap 2).
 
 > Ne modifiez pas le châssis à la main si vous comptez faire des `copier update` :
 > seul `frontend/src/landing-manifest.json` (la donnée de la landing produite
@@ -50,8 +51,8 @@ cd frontend && npm test        # Vitest (frontend)
 ## Déploiement (production)
 
 Le `docker-compose.yml` (sans suffixe) est le déploiement production : images
-buildées, réseau partagé `proxy-net`, TLS Let's Encrypt via Traefik{% if gitsky_tier != "t0" %}, base
-PostgreSQL dédiée{% endif %}. Il suppose l'infrastructure de flotte GitSky et **n'est pas
+buildées, réseau partagé `proxy-net`, TLS Let's Encrypt via Traefik, base
+PostgreSQL dédiée. Il suppose l'infrastructure de flotte GitSky et **n'est pas
 prévu pour un poste local** — utilisez `docker-compose.dev.yml` pour développer.
 
 ## Structure
@@ -59,9 +60,9 @@ prévu pour un poste local** — utilisez `docker-compose.dev.yml` pour dévelop
 ```
 app/
 ├── core/        Toujours chargé (config, db, main, auth, seo…)
-└── modules/     Modules optionnels, chargés selon les flags MODULE_* du tier
+└── modules/     Modules optionnels, chargés selon les flags MODULE_* activés
 frontend/        React + Vite
 alembic/         Migrations (core + chaînes par module)
 ```
 
-Les modules actifs à ce tier se lisent sur `/health` (champ `modules`).
+Les modules actifs se lisent sur `/health` (champ `modules`).

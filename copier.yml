@@ -1,7 +1,7 @@
 # Générateur create-gitsky-project (Chap 17) — spike Phase 2.
-# API Copier réelle : context hook (résolution du tier) + _tasks + _migrations.
-# Le livre décrit des hooks style Cookiecutter (_pre/_post_generation) ; ici on
-# utilise le vrai mécanisme Copier.
+# API Copier réelle : context hook (résolution du catalogue de modules) +
+# _tasks + _migrations. Le livre décrit des hooks style Cookiecutter
+# (_pre/_post_generation) ; ici on utilise le vrai mécanisme Copier.
 
 _subdirectory: template
 _templates_suffix: .jinja
@@ -46,7 +46,7 @@ _exclude:
 # blocks/**), qui reçoivent les correctifs de template normalement comme le
 # reste du châssis. Avant ce round, toute la vitrine (données ET rendu HTML
 # Jinja) vivait dans vitrine/** et était gelée en bloc — plus vrai depuis que
-# T0 rend la landing via l'app React partagée avec T1/T2 (React/Tailwind).
+# la landing rend via l'app React partagée, quels que soient les modules actifs.
 _skip_if_exists:
   - "frontend/src/landing-manifest.json"
 
@@ -54,25 +54,25 @@ _skip_if_exists:
 # relatif au template (extensions/context.py) plutôt qu'un module installé.
 _jinja_extensions:
   - copier_template_extensions.TemplateExtensionLoader
-  - extensions/context.py:TierResolver
+  - extensions/context.py:ModuleResolver
 
 # Contrat config.yaml du livre (Chap 17) : blocs top-level imbriqués. Le context
-# hook dérive project_name / gitsky_tier / project_domain depuis `project`.
+# hook dérive project_name / project_domain / gunicorn_workers depuis `project`.
 
-# project : identité + tier + domaine. domain optionnel -> défaut wildcard
-# {{ name }}.mystudio.com (T0/T1) ; un T2 promu reçoit un domaine premier dédié.
+# project : identité + domaine + workers. domain optionnel -> défaut wildcard
+# {{ name }}.mystudio.com (Chap 1). workers optionnel -> défaut 2 (Chap 21).
 project:
   type: yaml
-  help: "Identité du projet : name, tier (t0|t1|t2), domain"
+  help: "Identité du projet : name, domain, workers"
   default:
     name: mon-projet
-    tier: t0
 
-# Overrides des flags module par-dessus le profil de tier (clés courtes, sans
-# le préfixe module_). Ex. : modules: { agentic: true }
+# Flags de modules à activer, clés courtes (sans le préfixe module_) — chaque
+# module est un booléen indépendant, False si absent (Chap 2). Ex. : modules:
+# { admin: true, agentic: true }
 modules:
   type: yaml
-  help: "Overrides des flags module par tier (ex. {agentic: true})"
+  help: "Flags des modules à activer (ex. {admin: true, agentic: true})"
   default: {}
 
 # Modèles métier à scaffolder dans app/domain/. Liste de { name, fields: { champ: type } },
@@ -98,8 +98,8 @@ branding:
     primary_foreground: "#FFFFFF"
     font_family: "Inter"
 
-# Vitrine (Chap 24) : landing pilotée par un schéma de blocs ordonnés. Rendu en
-# HTML statique (SEO/vitesse T0). Le Studio produira ce schéma ; ici un défaut.
+# Vitrine (Chap 24) : landing pilotée par un schéma de blocs ordonnés. Le
+# Studio produira ce schéma ; ici un défaut.
 landing:
   type: yaml
   help: "Landing en blocs (skin + hero, email_capture, ...)"
@@ -148,7 +148,7 @@ postgres_password:
 _tasks:
   - command: "{{ _copier_python }} {{ _copier_conf.src_path }}/tasks/provision_db.py {{ project_name }}"
     when: "{{ _copier_operation == 'copy' }}"
-  - command: "{{ _copier_python }} {{ _copier_conf.src_path }}/tasks/register_fleet.py {{ project_name }} {{ gitsky_tier }}"
+  - command: "{{ _copier_python }} {{ _copier_conf.src_path }}/tasks/register_fleet.py {{ project_name }}"
     when: "{{ _copier_operation == 'copy' }}"
   - command: "git init -q"
     when: "{{ _copier_operation == 'copy' }}"

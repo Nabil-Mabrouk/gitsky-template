@@ -1,25 +1,22 @@
 """Configuration centralisée (Phase 1).
 
-`GITSKY_TIER` fixe le profil par défaut des flags `MODULE_*` (tableau Chap 2 §3),
-chaque flag pouvant être surchargé individuellement par une variable
-d'environnement (Chap 3 §Config).
+Catalogue de modules à plat (Chap 2) : chaque flag `MODULE_*` est un booléen
+indépendant, activé explicitement par variable d'environnement (Chap 3
+§Config). Pas de profil ni de palier — un flag absent de l'env vaut False.
 
-Sémantique de surcharge :
-- flag absent de l'env   -> None -> valeur du profil de tier
-- flag présent dans l'env -> True/False explicite (gagne toujours)
-
-Note SEO : le SEO dynamique est présent à tous les tiers (Chap 2) — il fait
-partie du core, ce n'est donc pas un flag `MODULE_*`.
+Note core : l'authentification et le SEO dynamique sont présents dans tout
+projet (Chap 2 §1) — ils font partie du core, ce ne sont donc pas des flags
+`MODULE_*`.
 """
 
 from functools import lru_cache
 
-from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Liste canonique des modules optionnels (Chap 3 §config.py).
+# Liste canonique des modules optionnels (Chap 3 §config.py). `module_auth`
+# n'y figure plus : l'authentification est core, toujours active (Chap 2 §1),
+# au même titre que le SEO.
 MODULE_FLAGS: tuple[str, ...] = (
-    "module_auth",
     "module_admin",
     "module_analytics",
     "module_onboarding",
@@ -32,31 +29,6 @@ MODULE_FLAGS: tuple[str, ...] = (
     "module_fleet",
 )
 
-# Profils par défaut par tier, dérivés du tableau Chap 2 §3.
-# Un flag absent d'un profil vaut False par défaut.
-# - T0 : « via collector/proxy partagé » = module LOCAL désactivé.
-# - T1 : agentic « optionnel » -> False par défaut (surcharge projet possible).
-# - T2 : tutorials « selon projet » -> False par défaut (surcharge projet).
-TIER_PROFILES: dict[str, dict[str, bool]] = {
-    "t0": {flag: False for flag in MODULE_FLAGS},
-    "t1": {
-        "module_auth": True,
-        "module_analytics": True,
-        "module_security_middleware": True,
-    },
-    "t2": {
-        "module_auth": True,
-        "module_admin": True,
-        "module_analytics": True,
-        "module_onboarding": True,
-        "module_security_middleware": True,
-        "module_i18n": True,
-        "module_agentic": True,
-        "module_monetization_shop": True,
-        "module_monetization_subscription": True,
-    },
-}
-
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -67,9 +39,8 @@ class Settings(BaseSettings):
     secret_key: str = "dev-insecure-change-me-in-production-0123456789"
     frontend_url: str = "http://localhost:5173"
     environment: str = "development"
-    gitsky_tier: str = "t0"
 
-    # SEO (Chap 10, core à tous les tiers). `site_url` est l'origine publique
+    # SEO (Chap 10, core dans tout projet). `site_url` est l'origine publique
     # canonique du projet (https://mon-projet.com) — sert de préfixe absolu aux
     # URLs du sitemap et à la ligne Sitemap: de robots.txt. En dev on retombe
     # sur frontend_url ; la prod fournit le vrai domaine via l'environnement.
@@ -94,32 +65,28 @@ class Settings(BaseSettings):
     # n'importe qui pouvait créer/écraser les projets de la flotte.
     fleet_register_token: str = ""
 
-    # None = « non spécifié » -> rempli par le profil de tier.
-    module_auth: bool | None = None
-    module_admin: bool | None = None
-    module_analytics: bool | None = None
-    module_onboarding: bool | None = None
-    module_tutorials: bool | None = None
-    module_security_middleware: bool | None = None
-    module_i18n: bool | None = None
-    module_agentic: bool | None = None
-    module_monetization_shop: bool | None = None
-    module_monetization_subscription: bool | None = None
+    # Catalogue de modules à plat (Chap 2) : chaque flag est un booléen
+    # indépendant, False par défaut — aucun profil ne le pré-remplit.
+    module_admin: bool = False
+    module_analytics: bool = False
+    module_onboarding: bool = False
+    module_tutorials: bool = False
+    module_security_middleware: bool = False
+    module_i18n: bool = False
+    module_agentic: bool = False
+    module_monetization_shop: bool = False
+    module_monetization_subscription: bool = False
     # Module spécial : activé uniquement pour l'app fleet dashboard (mystudio.com).
-    module_fleet: bool | None = None
-
-    @model_validator(mode="after")
-    def apply_tier_defaults(self) -> "Settings":
-        profile = TIER_PROFILES.get(self.gitsky_tier, {})
-        for flag in MODULE_FLAGS:
-            if getattr(self, flag) is None:
-                setattr(self, flag, profile.get(flag, False))
-        return self
+    module_fleet: bool = False
 
     @property
     def enabled_modules(self) -> list[str]:
-        """Modules actifs, sans le préfixe `module_` — pratique pour logs/health."""
-        return [
+        """Modules actifs, sans le préfixe `module_` — pratique pour logs/health.
+
+        Inclut toujours `auth` : présent dans tout projet (Chap 2 §1), il ne
+        porte pas de flag `MODULE_*` mais reste utile à afficher.
+        """
+        return ["auth"] + [
             flag.removeprefix("module_")
             for flag in MODULE_FLAGS
             if getattr(self, flag)

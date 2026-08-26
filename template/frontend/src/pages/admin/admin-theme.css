@@ -1,0 +1,133 @@
+/* Thème du shell admin (Chap 28, refonte visuelle) — même patron que
+   landing.css (:root clair par défaut + @media prefers-color-scheme: dark),
+   mais tokens préfixés --admin-* pour ne jamais entrer en collision avec
+   --bg/--surface/--text/--border de landing.css : les deux fichiers sont
+   chargés dans le même bundle (SPA non code-splittée par route), donc des
+   noms identiques sur :root s'écraseraient silencieusement selon l'ordre
+   d'import. --color-primary/--color-primary-foreground/--font-family-base
+   restent ceux de theme.css.jinja (déjà chargé globalement) — non redéfinis
+   ici, l'identité de marque ne change pas entre les pages.
+   Import uniquement depuis AdminLayout.tsx : n'affecte aucune autre page. */
+
+:root {
+  --admin-bg: #f6f6f7;
+  --admin-surface: #ffffff;
+  --admin-surface-raised: #ffffff;
+  --admin-text: #16161a;
+  --admin-text-muted: #6b6b73;
+  --admin-border: rgba(0, 0, 0, 0.1);
+  --admin-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  --admin-success-bg: #e6f6ec;
+  --admin-success-text: #146c2e;
+  --admin-warning-bg: #fdf3e3;
+  --admin-warning-text: #92600a;
+  --admin-danger-bg: #fbe9e9;
+  --admin-danger-text: #a3211f;
+  --admin-info-bg: #e8f0fe;
+  --admin-info-text: #1a4fb4;
+  --admin-neutral-bg: #eeeef0;
+  --admin-neutral-text: #52525b;
+}
+
+/* Dark mode automatique (OS/navigateur), zéro JS — même choix que la
+   landing : pas de toggle, --color-primary ne change pas entre les deux. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --admin-bg: #0e0e10;
+    --admin-surface: #18181b;
+    --admin-surface-raised: #202024;
+    --admin-text: #f2f2f0;
+    --admin-text-muted: #9b9ba3;
+    --admin-border: rgba(255, 255, 255, 0.1);
+    --admin-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+
+    --admin-success-bg: rgba(34, 197, 94, 0.16);
+    --admin-success-text: #4ade80;
+    --admin-warning-bg: rgba(245, 158, 11, 0.16);
+    --admin-warning-text: #fbbf24;
+    --admin-danger-bg: rgba(239, 68, 68, 0.16);
+    --admin-danger-text: #f87171;
+    --admin-info-bg: rgba(59, 130, 246, 0.16);
+    --admin-info-text: #93c5fd;
+    --admin-neutral-bg: rgba(255, 255, 255, 0.08);
+    --admin-neutral-text: #c4c4cc;
+  }
+}
+
+/* Pas de min-height: 100vh ici : .admin-shell est imbriqué dans le <main
+   className="p-6"> du shell applicatif (App.tsx), qui a lui-même sa propre
+   hauteur de contenu — forcer 100vh en plus de ce padding externe créerait
+   un double défilement. margin: -1.5rem étend la surface admin jusqu'aux
+   bords du <main> parent (dont le padding reste utile aux autres pages :
+   Apprentissage, Connexion, etc.) sans dupliquer la marge visuellement. */
+.admin-shell {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  margin: -1.5rem;
+  min-height: calc(100vh - 4.5rem);
+}
+
+.admin-shell a { color: inherit; }
+
+.admin-sidebar {
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-border);
+}
+
+.admin-sidebar .admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--admin-text-muted);
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.admin-sidebar .admin-nav-link:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  color: var(--admin-text);
+}
+
+.admin-sidebar .admin-nav-link.active {
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.admin-card {
+  background: var(--admin-surface-raised);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.admin-badge::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.admin-badge--success { background: var(--admin-success-bg); color: var(--admin-success-text); }
+.admin-badge--warning { background: var(--admin-warning-bg); color: var(--admin-warning-text); }
+.admin-badge--danger { background: var(--admin-danger-bg); color: var(--admin-danger-text); }
+.admin-badge--info { background: var(--admin-info-bg); color: var(--admin-info-text); }
+.admin-badge--neutral { background: var(--admin-neutral-bg); color: var(--admin-neutral-text); }

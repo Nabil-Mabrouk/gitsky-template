@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../api";
+import "./admin-theme.css";
 
 interface Tab {
   key: string;
@@ -16,13 +17,15 @@ interface Tab {
 // générique (GET /api/admin/modules).
 // moduleFlag "security_middleware" (pas "security") : GET /api/admin/modules
 // reflète les clés MODULE_FLAGS sans le préfixe "module_".
-// users/waitlist : onglets SHELL (Chap 9) — toujours présents dès que le
-// dashboard admin existe, pas liés à un module optionnel plus précis. D'où
-// moduleFlag "admin" (le shell lui-même) plutôt qu'un flag dédié qui
-// n'existe pas — GET /api/admin/modules n'est de toute façon joignable QUE
-// si module_admin, donc la clé "admin" y est forcément présente et vraie.
+// users/waitlist/activity : onglets SHELL (Chap 9, Chap 28) — toujours
+// présents dès que le dashboard admin existe, pas liés à un module optionnel
+// précis. D'où moduleFlag "admin" (le shell lui-même) plutôt qu'un flag
+// dédié qui n'existe pas — GET /api/admin/modules n'est de toute façon
+// joignable QUE si module_admin, donc la clé "admin" y est forcément
+// présente et vraie.
 const TABS: Tab[] = [
   { key: "fleet", labelKey: "admin.tabs.fleet", path: "/admin/fleet", moduleFlag: "fleet" },
+  { key: "activity", labelKey: "admin.tabs.activity", path: "/admin/activity", moduleFlag: "fleet" },
   { key: "leads", labelKey: "admin.tabs.leads", path: "/admin/leads", moduleFlag: "fleet" },
   { key: "maintenance", labelKey: "admin.tabs.maintenance", path: "/admin/maintenance", moduleFlag: "fleet" },
   { key: "users", labelKey: "admin.tabs.users", path: "/admin/users", moduleFlag: "admin" },
@@ -46,15 +49,15 @@ export default function AdminLayout() {
   const visibleTabs = TABS.filter((tab) => modules?.[tab.moduleFlag]);
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 border-r p-4">
+    <div className="admin-shell flex">
+      <aside className="admin-sidebar w-60 shrink-0 p-4">
         <nav className="grid gap-1">
           {visibleTabs.map((tab) => (
             <Link
               key={tab.key}
               to={tab.path}
-              className={`rounded p-2 hover:bg-black/5 ${
-                location.pathname.startsWith(tab.path) ? "font-semibold" : ""
+              className={`admin-nav-link ${
+                location.pathname.startsWith(tab.path) ? "active" : ""
               }`}
             >
               {t(tab.labelKey)}
@@ -62,7 +65,7 @@ export default function AdminLayout() {
           ))}
         </nav>
       </aside>
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 md:p-8">
         <Outlet />
       </main>
     </div>

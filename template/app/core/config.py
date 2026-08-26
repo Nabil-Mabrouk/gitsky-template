@@ -65,6 +65,20 @@ class Settings(BaseSettings):
     # n'importe qui pouvait créer/écraser les projets de la flotte.
     fleet_register_token: str = ""
 
+    # Secret partagé HMAC-SHA256 exigé par les livraisons webhook GitHub
+    # (header X-Hub-Signature-256) sur POST /api/fleet/webhooks/github/{name}
+    # (Chap 26). Même sémantique fail-open-dev/fail-closed-prod que
+    # fleet_register_token — un webhook public serait un déclencheur de
+    # déploiement arbitraire.
+    fleet_github_webhook_secret: str = ""
+
+    # Branche qui déclenche un redeploy (Chap 26). Un push sur toute autre
+    # branche (feature/WIP) est reçu et vérifié mais N'EST PAS un déploiement
+    # — seule la branche de prod fait foi, comme dans tout pipeline CD
+    # standard. Un seul réglage pour toute la flotte : pas de colonne
+    # par-projet pour l'instant (YAGNI tant qu'aucun projet n'en a besoin).
+    fleet_github_deploy_branch: str = "main"
+
     # Catalogue de modules à plat (Chap 2) : chaque flag est un booléen
     # indépendant, False par défaut — aucun profil ne le pré-remplit.
     module_admin: bool = False

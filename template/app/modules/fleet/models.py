@@ -9,7 +9,7 @@ rattachées à un seul projet, alors que `fleet_lifecycle_events` suit le cycle
 de vie d'UN projet.
 """
 
-from sqlalchemy import Column, DateTime, Integer, String, func
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, func
 
 from app.core.database import Base
 
@@ -23,6 +23,13 @@ class Project(Base):
     status = Column(String, nullable=False, default="active")  # active/archived
     publish_status = Column(String, nullable=False, default="draft")  # draft/preview/live
     template_version = Column(String)
+    # Intégration GitHub (Chap 26, Phase D) : dépôt créé via l'API ou lié
+    # manuellement à un dépôt existant (`owner/name`), et si un webhook push a
+    # pu y être installé — sinon le redeploy sur push reste indisponible pour
+    # ce projet tant que le webhook n'est pas ajouté (à la main ou en relançant
+    # le lien).
+    github_repo = Column(String, nullable=True)
+    github_webhook_installed = Column(Boolean, nullable=False, default=False)
     first_deployed_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

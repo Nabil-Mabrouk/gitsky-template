@@ -56,6 +56,51 @@ async def _last_availability_event(db: AsyncSession, project_name: str) -> str |
     return row
 
 
+async def bulk_health_status(
+    db: AsyncSession, project_names: list[str]
+) -> dict[str, str]:
+    """Statut de santé courant de chaque projet, en UNE requête (pas de N+1
+    pour la grille de la flotte, Chap 28) — dérivé du dernier événement de
+    disponibilité journalisé, jamais stocké séparément : `fleet_lifecycle_events`
+    reste la seule source de vérité (Chap 19 §« pas de duplication »).
+
+    - `"unknown"` : aucun événement de disponibilité n'a jamais été journalisé
+      pour ce projet (jamais balayé, ou trop récent).
+    - `"failing"` : le dernier événement est `deployment_failed`.
+    - `"healthy"` : le dernier événement est `deployment_recovered`, ou plus
+      simplement aucune panne n'a jamais été journalisée alors qu'au moins un
+      autre événement de disponibilité existe.
+    """
+    if not project_names:
+        return {}
+    rows = (
+        await db.execute(
+            select(FleetLifecycleEvent.project_name, FleetLifecycleEvent.event_type)
+            .where(
+                FleetLifecycleEvent.project_name.in_(project_names),
+                FleetLifecycleEvent.event_type.in_(_AVAILABILITY_EVENTS),
+            )
+            .order_by(FleetLifecycleEvent.id)
+        )
+    ).all()
+    # Ordre croissant : la dernière écriture pour un projet donné écrase les
+    # précédentes dans ce dict — c'est elle qui doit gagner.
+    last_event: dict[str, str] = {}
+    for name, event_type in rows:
+        last_event[name] = event_type
+
+    return {
+        name: (
+            "failing"
+            if last_event.get(name) == DEPLOYMENT_FAILED
+            else "healthy"
+            if name in last_event
+            else "unknown"
+        )
+        for name in project_names
+    }
+
+
 async def record_health_sweep(
     db: AsyncSession,
     last_success: Mapping[str, datetime | None],

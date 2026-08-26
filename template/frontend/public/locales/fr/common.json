@@ -1,5 +1,9 @@
 {
-  "nav": { "learn": "Apprendre", "login": "Connexion", "logout": "Déconnexion" },
+  "nav": {
+    "learn": "Apprendre",
+    "login": "Connexion",
+    "logout": "Déconnexion"
+  },
   "learn": {
     "title": "Catalogue",
     "premium": "Premium",
@@ -35,6 +39,7 @@
     "nav": "Admin",
     "tabs": {
       "fleet": "Flotte",
+      "activity": "Activité",
       "leads": "Leads",
       "maintenance": "Maintenance",
       "users": "Utilisateurs",
@@ -49,7 +54,12 @@
       "empty": "Aucun lead pour ce projet.",
       "noProjects": "Aucun projet T0 enregistré.",
       "error": "Impossible de charger les leads.",
-      "columns": { "email": "Email", "source": "Source", "date": "Date", "verified": "Vérifié" }
+      "columns": {
+        "email": "Email",
+        "source": "Source",
+        "date": "Date",
+        "verified": "Vérifié"
+      }
     },
     "maintenance": {
       "title": "Maintenance",
@@ -80,7 +90,11 @@
       "suspend": "Suspendre",
       "reactivate": "Réactiver",
       "you": "vous",
-      "columns": { "email": "Email", "role": "Rôle", "status": "Statut" }
+      "columns": {
+        "email": "Email",
+        "role": "Rôle",
+        "status": "Statut"
+      }
     },
     "waitlist": {
       "title": "Waitlist",
@@ -89,7 +103,9 @@
       "error": "Impossible de charger la waitlist.",
       "invite": "Inviter",
       "sent": "Envoyé",
-      "columns": { "email": "Email" }
+      "columns": {
+        "email": "Email"
+      }
     },
     "analytics": {
       "title": "Analytics",
@@ -97,9 +113,18 @@
       "empty": "Aucune donnée pour l'instant.",
       "error": "Impossible de charger les données.",
       "visits": "Visites",
-      "world": { "title": "Visites par pays", "country": "Pays" },
-      "paths": { "title": "Pages les plus visitées", "path": "Page" },
-      "timeline": { "title": "Visites par jour", "date": "Date" }
+      "world": {
+        "title": "Visites par pays",
+        "country": "Pays"
+      },
+      "paths": {
+        "title": "Pages les plus visitées",
+        "path": "Page"
+      },
+      "timeline": {
+        "title": "Visites par jour",
+        "date": "Date"
+      }
     },
     "security": {
       "title": "Sécurité",
@@ -130,8 +155,22 @@
         "name": "Projet",
         "domain": "Domaine",
         "status": "Statut",
-        "publishStatus": "Statut de publication"
-      }
+        "publishStatus": "Statut de publication",
+        "health": "Santé"
+      },
+      "sortBy": "Trier par",
+      "sortDirection": "Inverser l'ordre",
+      "noDomain": "Aucun domaine",
+      "health": {
+        "healthy": "En ligne",
+        "failing": "En panne",
+        "unknown": "Inconnue"
+      },
+      "githubOk": "GitHub lié — redeploy auto",
+      "githubNoWebhook": "GitHub lié — webhook manquant",
+      "githubNone": "Pas de dépôt GitHub",
+      "viewProject": "Voir →",
+      "newProject": "+ Nouveau projet"
     },
     "actions": {
       "back": "← Retour à la flotte",
@@ -142,7 +181,57 @@
       "humanApproved": "Approbation humaine",
       "runPromote": "Lancer la promotion",
       "promoted": "Promu :",
-      "notPromoted": "Non promu :"
+      "notPromoted": "Non promu :",
+      "archiveTitle": "Archivage",
+      "runArchive": "Archiver le projet",
+      "archived": "Projet archivé.",
+      "alreadyArchived": "Ce projet est déjà archivé.",
+      "githubTitle": "Intégration GitHub",
+      "githubNoRepo": "Aucun dépôt lié pour l'instant.",
+      "githubRepoLinked": "Dépôt lié :",
+      "githubWebhookOk": "Webhook push installé — redeploy automatique actif.",
+      "githubWebhookMissing": "Webhook non installé — redeploy manuel requis.",
+      "githubCreateRepo": "Créer un dépôt et déployer",
+      "githubLinkRepoLabel": "Ou lier un dépôt existant (owner/repo) :",
+      "githubLinkRepoPlaceholder": "mon-org/mon-projet",
+      "githubLinkRepo": "Lier ce dépôt"
+    },
+    "create": {
+      "title": "Créer un projet",
+      "nameLabel": "Nom du projet",
+      "namePlaceholder": "mon-projet",
+      "modulesLabel": "Modules à activer",
+      "domainLabel": "Domaine (optionnel)",
+      "githubLabel": "GitHub",
+      "githubSkip": "Pas de dépôt pour l'instant",
+      "githubCreate": "Créer un nouveau dépôt",
+      "githubPrivate": "Dépôt privé",
+      "githubLink": "Lier un dépôt existant",
+      "githubLinkPlaceholder": "mon-org/mon-projet",
+      "submit": "Créer et déployer",
+      "submitting": "Création en cours…",
+      "genericError": "La création a échoué.",
+      "doneTitle": "Projet créé",
+      "summaryGenerated": "Projet généré à partir du template.",
+      "summaryNotGenerated": "Le projet n'a pas pu être généré.",
+      "summaryRepo": "Dépôt GitHub :",
+      "summaryWebhookOk": "Webhook push installé — redeploy automatique actif.",
+      "summaryWebhookMissing": "Webhook non installé — redeploy manuel requis.",
+      "summaryPushed": "Code initial poussé vers le dépôt.",
+      "summaryNotPushed": "Le premier push a échoué — à faire à la main.",
+      "summaryDeployTriggered": "Premier déploiement déclenché.",
+      "goToProject": "Voir la fiche du projet"
+    }
+  },
+  "activity": {
+    "title": "Activité de la flotte",
+    "subtitle": "Fusion des événements de cycle de vie et des exécutions de maintenance — hors événements de sécurité (isolés par projet, Chap 18).",
+    "loading": "Chargement…",
+    "empty": "Aucune activité pour l'instant.",
+    "error": "Impossible de charger l'activité.",
+    "kind": {
+      "lifecycle": "Cycle de vie",
+      "maintenance": "Maintenance"
     }
   }
 }

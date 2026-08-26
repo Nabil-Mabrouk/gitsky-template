@@ -7,6 +7,8 @@ import Landing from "./pages/Landing";
 import Learn from "./pages/Learn";
 import Login from "./pages/Login";
 import FleetGrid from "./pages/FleetGrid";
+import Activity from "./pages/admin/Activity";
+import CreateProject from "./pages/admin/CreateProject";
 import ProjectActions from "./pages/admin/ProjectActions";
 import Leads from "./pages/admin/Leads";
 import Maintenance from "./pages/admin/Maintenance";
@@ -93,7 +95,9 @@ export default function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="fleet" replace />} />
               <Route path="fleet" element={<FleetGrid />} />
+              <Route path="fleet/new" element={<CreateProject />} />
               <Route path="fleet/:name" element={<ProjectActions />} />
+              <Route path="activity" element={<Activity />} />
               <Route path="leads" element={<Leads />} />
               <Route path="maintenance" element={<Maintenance />} />
               <Route path="users" element={<Users />} />

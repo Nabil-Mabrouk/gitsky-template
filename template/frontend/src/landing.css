@@ -106,7 +106,10 @@
    forcerait à les contrer pour chaque variante x chaque skin. */
 .landing .hero--split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2.5rem; align-items: center; text-align: left; max-width: 1100px; }
 .landing .hero--split .hero-panel { aspect-ratio: 4 / 3; border-radius: 1rem; background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--color-primary) 55%, var(--bg)), var(--color-primary) 70%); }
-.landing img.hero-panel { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* width seul : height:100% forcerait le calcul de taille à ignorer
+   aspect-ratio dès que la cellule de grille a une hauteur définie (ex. si le
+   texte est long) — cause réelle observée : image écrasée en bande verticale. */
+.landing img.hero-panel { width: 100%; object-fit: cover; display: block; }
 .landing .hero-image { display: block; width: 100%; max-width: 100%; border-radius: 1rem; margin-top: 2rem; aspect-ratio: 16 / 9; object-fit: cover; }
 @media (max-width: 720px) {
   .landing .hero--split { grid-template-columns: 1fr; text-align: center; }
@@ -134,7 +137,12 @@
 
 /* skin: editorial — serif, aligné à gauche, grande typo */
 .landing[data-skin="editorial"] { font-family: Georgia, "Times New Roman", var(--font-family-base), serif; }
-.landing[data-skin="editorial"] section { max-width: 720px; }
+/* :not(.hero--split), pas juste "section" : sinon cette règle (specificité
+   attribut+classe+élément) bat .hero--split { max-width: 1100px } malgré son
+   ordre source antérieur (classe+classe, moins spécifique) — le hero split
+   se retrouvait plafonné à 720px, colonne de texte ~350px pour un h1 à
+   3.5rem : quasi un mot par ligne (bug réel constaté en prod). */
+.landing[data-skin="editorial"] section:not(.hero--split) { max-width: 720px; }
 .landing[data-skin="editorial"] .hero { text-align: left; padding: 6rem 1.5rem; }
 .landing[data-skin="editorial"] .hero h1 { font-size: 3.5rem; font-weight: 400; letter-spacing: -0.02em; margin: 0 0 1rem; }
 .landing[data-skin="editorial"] blockquote { font-size: 1.5rem; font-style: italic; border-left: 3px solid var(--color-primary); padding-left: 1rem; }

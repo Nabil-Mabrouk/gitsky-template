@@ -1,0 +1,40 @@
+# .env contient des secrets RÉELS (SECRET_KEY, mot de passe Postgres, et pour
+# le fleet dashboard FLEET_GITHUB_TOKEN/SMTP_PASSWORD) — ne doit JAMAIS entrer
+# dans l'historique git d'un projet généré. Sans ce fichier, le `git add -A`
+# des _tasks de copier.yml (Chap 17) le committe tel quel dans le premier
+# commit — bug de prod réel : un `.env` complet (SECRET_KEY + mot de passe
+# Postgres) a fini poussé sur un dépôt GitHub distant en liant politique-ia
+# à un dépôt existant (Chap 26), faute de ce fichier.
+# PAS de motif générique `.env.*` : un générateur Copier vu de l'intérieur
+# évalue apparemment les motifs de ce fichier CONTRE LES NOMS SOURCE .jinja
+# eux-mêmes (`.env.jinja`, `.env.backup.example.jinja` matchent tous deux
+# `.env.*`) — constaté empiriquement, pas documenté. `.env` seul (sans
+# wildcard) ne déclenche pas ce comportement ; comme aucun autre fichier de la
+# famille .env n'a besoin d'être ignoré (.env.backup.example, Chap 23, DOIT
+# rester suivi), un motif exact suffit — pas de wildcard à réintroduire sans
+# re-générer un projet réel pour vérifier.
+# frontend/.env n'est pas rendu depuis un .jinja : c'est un défaut de dev non
+# secret (VITE_API_URL=http://localhost:8000), committé à dessein pour que
+# `npm run dev` fonctionne juste après un clone — exception explicite, sinon
+# le motif `.env` (sans "/") matche à toute profondeur (sémantique gitignore).
+.env
+!frontend/.env
+
+# Artefacts Python locaux — jamais dans l'historique d'un projet livré.
+__pycache__/
+*.py[co]
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Artefacts front locaux.
+node_modules/
+dist/
+
+# Bases de développement locales : jamais les données d'une machine de dev.
+*.db
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db

@@ -192,6 +192,18 @@ async def create_project(
             repo = await github_client.create_repo(payload.name, private=payload.github_private)
             github_repo = repo["full_name"]
             clone_url = repo["clone_url"]
+        except RuntimeError as exc:
+            # github_client.create_repo est fail-closed (Chap 26) : sans
+            # FLEET_GITHUB_TOKEN en ENVIRONMENT=production, il lève RuntimeError
+            # plutôt que de basculer sur son stub — une config manquante, pas un
+            # appel HTTP raté. Distinct de httpx.HTTPError ci-dessous pour un
+            # message qui pointe vers la bonne remédiation.
+            logger.exception("GitHub non configuré pour %s", payload.name)
+            warnings.append(
+                f"Génération et enregistrement OK, mais {exc} — configurez "
+                "FLEET_GITHUB_TOKEN puis réessayez depuis l'onglet Actions "
+                "(create-repo/link-repo)."
+            )
         except httpx.HTTPError:
             logger.exception("Échec de création du dépôt GitHub pour %s", payload.name)
             warnings.append(
@@ -510,6 +522,15 @@ async def _install_webhook(settings, repo_full_name: str, name: str) -> tuple[bo
             repo_full_name, _webhook_url(settings, name), settings.fleet_github_webhook_secret
         )
         return True, ""
+    except RuntimeError as exc:
+        # Même contrat fail-closed que create_repo (Chap 26) : FLEET_GITHUB_TOKEN
+        # absent en production lève RuntimeError, pas httpx.HTTPError.
+        logger.exception("Webhook GitHub non configuré pour %s", repo_full_name)
+        return False, (
+            f"Dépôt lié, mais {exc} — configurez FLEET_GITHUB_TOKEN pour activer "
+            "le redeploy automatique, ou installez le webhook manuellement sur "
+            "GitHub."
+        )
     except httpx.HTTPError:
         logger.exception("Échec d'installation du webhook GitHub pour %s", repo_full_name)
         return False, (
@@ -541,7 +562,21 @@ async def github_create_repo(
         )
 
     settings = get_settings()
-    repo = await github_client.create_repo(name, private=payload.private)
+    try:
+        repo = await github_client.create_repo(name, private=payload.private)
+    except RuntimeError as exc:
+        # Config manquante (FLEET_GITHUB_TOKEN absent en production) : action
+        # explicite d'un opérateur, pas d'orchestration best-effort en amont —
+        # un échec clair (503) est plus utile ici qu'un warning enterré dans
+        # une réponse qu'on ne regarde pas forcément.
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Échec de création du dépôt GitHub : {exc}",
+        ) from exc
     webhook_installed, message = await _install_webhook(settings, repo["full_name"], name)
 
     project.github_repo = repo["full_name"]

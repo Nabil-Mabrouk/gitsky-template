@@ -82,6 +82,20 @@ services:
       # de joindre ce réseau interne à la flotte.
       - shared-services-net
 {%- endif %}
+{%- if resolved_modules.module_fleet %}
+    volumes:
+      # Le wizard de création (Chap 27) invoque `copier.run_copy` DANS ce
+      # conteneur : sans accès filesystem réel aux chemins HÔTE que
+      # GITSKY_GENERATOR_PATH/PROJECTS_DIR désignent, la génération ne peut
+      # matérialiser aucun fichier, quelle que soit la valeur de ces variables
+      # dans .env. Chemin hôte == chemin conteneur (comme
+      # SHARED_SERVICES_NETWORK ci-dessous) : GITSKY_GENERATOR_PATH lu depuis
+      # l'intérieur du conteneur reste valide, sans traduction. Le générateur
+      # est monté en lecture seule (il ne fait que le lire) ; PROJECTS_DIR en
+      # lecture-écriture (chaque génération y écrit un nouveau projet).
+      - ${GITSKY_GENERATOR_PATH:-/opt/gitsky/gitsky-v2/src/generator}:${GITSKY_GENERATOR_PATH:-/opt/gitsky/gitsky-v2/src/generator}:ro
+      - ${PROJECTS_DIR:-/opt/gitsky/projects}:${PROJECTS_DIR:-/opt/gitsky/projects}
+{%- endif %}
     depends_on:
       db:
         condition: service_healthy

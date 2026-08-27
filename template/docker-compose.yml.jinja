@@ -95,6 +95,15 @@ services:
       # lecture-écriture (chaque génération y écrit un nouveau projet).
       - ${GITSKY_GENERATOR_PATH:-/opt/gitsky/gitsky-v2/src/generator}:${GITSKY_GENERATOR_PATH:-/opt/gitsky/gitsky-v2/src/generator}:ro
       - ${PROJECTS_DIR:-/opt/gitsky/projects}:${PROJECTS_DIR:-/opt/gitsky/projects}
+      # `src/generator` est un sous-module git : son .git est un simple
+      # POINTEUR ("gitdir: ../../.git/modules/src/generator"), le vrai
+      # dépôt vit dans le .git du monorepo parent. Sans ce montage, tout
+      # projet créé via le wizard perd `_commit` dans .copier-answers.yml
+      # (aucune erreur visible — Copier n'y résout juste jamais le commit)
+      # et ne peut donc plus JAMAIS recevoir `copier update` (bug de prod
+      # réel, trouvé en essayant de mettre à jour un projet créé par le
+      # wizard). Chemin hôte == chemin conteneur, même principe que ci-dessus.
+      - ${GITSKY_MONOREPO_GITDIR:-/opt/gitsky/gitsky-v2/.git}:${GITSKY_MONOREPO_GITDIR:-/opt/gitsky/gitsky-v2/.git}:ro
 {%- endif %}
     depends_on:
       db:

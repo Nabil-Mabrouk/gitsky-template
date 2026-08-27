@@ -512,7 +512,19 @@ async def archive_project(
 
 
 def _webhook_url(settings, name: str) -> str:
-    return f"{settings.site_url.rstrip('/')}/api/fleet/webhooks/github/{name}"
+    # Bug de prod réel : settings.site_url est l'origine du FRONTEND (Chap
+    # 10, SEO) — un webhook GitHub construit dessus atterrissait sur le
+    # routeur Traefik du frontend (Host(`{domaine}`)), jamais sur le backend
+    # (Host(`api.{domaine}`), seul routeur qui expose réellement cette route).
+    # GitHub rapportait pourtant "200 active" : le frontend renvoie son
+    # index.html (SPA fallback) pour toute route inconnue, un faux positif
+    # silencieux — même classe de bug que l'incident /leads (Chap 18).
+    # `api.` est un préfixe FIXE dans toute la flotte (docker-compose.yml.
+    # jinja ne le rend jamais configurable, Chap 21) : le dériver de
+    # site_url évite d'introduire un 4e réglage manuel qu'un opérateur
+    # pourrait, comme site_url lui-même, oublier de configurer.
+    scheme, _, host = settings.site_url.partition("://")
+    return f"{scheme}://api.{host.rstrip('/')}/api/fleet/webhooks/github/{name}"
 
 
 async def _install_webhook(settings, repo_full_name: str, name: str) -> tuple[bool, str]:

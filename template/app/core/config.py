@@ -79,6 +79,16 @@ class Settings(BaseSettings):
     # par-projet pour l'instant (YAGNI tant qu'aucun projet n'en a besoin).
     fleet_github_deploy_branch: str = "main"
 
+    # Suffixe attribué aux projets créés sans domaine explicite (wizard,
+    # Chap 27) et utilisé par publish.evaluate_promotion (Chap 24) pour
+    # décider si un domaine est un sous-domaine jetable de la flotte. Le
+    # défaut ".mystudio.com" est celui du livre (Chap 1) — un exemple, jamais
+    # un domaine réel : DÉPLOYER SANS LE SURCHARGER PRODUIT DES PROJETS SUR UN
+    # DOMAINE QUI N'EXISTE PAS (aucun certificat ACME possible, bug de prod du
+    # 27/08). Chaque déploiement DOIT le régler sur son propre domaine wildcard
+    # (ex. ".0-hitl.com") dans .env.
+    fleet_subdomain_suffix: str = ".mystudio.com"
+
     # Catalogue de modules à plat (Chap 2) : chaque flag est un booléen
     # indépendant, False par défaut — aucun profil ne le pré-remplit.
     module_admin: bool = False

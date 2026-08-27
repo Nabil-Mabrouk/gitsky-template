@@ -174,14 +174,18 @@ async def create_project(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
         ) from exc
 
-    domain = payload.domain or f"{payload.name}{publish.FLEET_SUBDOMAIN_SUFFIX}"
+    settings = get_settings()
+    # settings.fleet_subdomain_suffix, PAS publish.FLEET_SUBDOMAIN_SUFFIX : ce
+    # dernier est le défaut de repli du module pur (Chap 24), ".mystudio.com"
+    # de l'exemple du livre — un déploiement réel doit avoir surchargé
+    # FLEET_SUBDOMAIN_SUFFIX dans son .env (bug de prod du 27/08 sinon : des
+    # projets générés sur un domaine placeholder, aucun certificat possible).
+    domain = payload.domain or f"{payload.name}{settings.fleet_subdomain_suffix}"
     project = Project(name=payload.name, domain=domain, template_version="")
     db.add(project)
     db.add(FleetLifecycleEvent(project_name=payload.name, event_type="born"))
     await db.commit()
     await db.refresh(project)
-
-    settings = get_settings()
     warnings: list[str] = []
     github_repo: str | None = None
     webhook_installed = False
@@ -456,6 +460,7 @@ async def promote(
         project.domain or "",
         payload.guardrails_pass,
         payload.human_approved,
+        subdomain_suffix=get_settings().fleet_subdomain_suffix,
     )
     if decision["allowed"]:
         project.publish_status = decision["target"]

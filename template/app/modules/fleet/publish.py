@@ -12,7 +12,11 @@ from enum import Enum
 
 # Suffixe du domaine wildcard partagé de la flotte (Chap 1) — un projet sur ce
 # suffixe n'a pas encore de domaine dédié, donc rien d'irréversible à protéger
-# au-delà de ce que les guardrails couvrent déjà.
+# au-delà de ce que les guardrails couvrent déjà. Défaut de repli UNIQUEMENT :
+# un déploiement réel configure app.core.config.Settings.fleet_subdomain_suffix
+# (env FLEET_SUBDOMAIN_SUFFIX) sur son propre domaine — ce module reste PUR
+# (aucun accès à `settings` ici), donc l'appelant (router.py) doit passer la
+# valeur réelle via le paramètre `subdomain_suffix` de evaluate_promotion.
 FLEET_SUBDOMAIN_SUFFIX = ".mystudio.com"
 
 
@@ -27,8 +31,15 @@ def evaluate_promotion(
     domain: str,
     guardrails_pass: bool,
     human_approved: bool = False,
+    subdomain_suffix: str = FLEET_SUBDOMAIN_SUFFIX,
 ) -> dict:
-    """Renvoie {allowed, target, reason} sans muter d'état."""
+    """Renvoie {allowed, target, reason} sans muter d'état.
+
+    `subdomain_suffix` : le suffixe RÉEL du déploiement (settings, pas la
+    constante de ce module) — l'appelant production doit le passer
+    explicitement, faute de quoi tout domaine est jugé "dédié" (jamais
+    auto-live) sur un déploiement dont le suffixe diffère de ".mystudio.com".
+    """
     if current == PublishState.draft.value:
         return {
             "allowed": True,
@@ -44,7 +55,7 @@ def evaluate_promotion(
                 "reason": "guardrails en échec — passage en live bloqué",
             }
         # Étape irréversible : gate par blast radius.
-        on_fleet_subdomain = domain.endswith(FLEET_SUBDOMAIN_SUFFIX)
+        on_fleet_subdomain = domain.endswith(subdomain_suffix)
         if on_fleet_subdomain or human_approved:
             return {
                 "allowed": True,

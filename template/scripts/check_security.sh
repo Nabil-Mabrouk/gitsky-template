@@ -34,7 +34,7 @@ else
 fi
 
 # 2. Les fichiers .env ne doivent jamais être suivis par git.
-for secret in .env .env.backup .env.prod; do
+for secret in .env .env.local .env.backup .env.prod; do
     if git -C "$PROJECT_DIR" ls-files --error-unmatch "$secret" >/dev/null 2>&1; then
         echo "✗ CRITIQUE : $secret est suivi par git !"
         ERRORS=$((ERRORS + 1))
@@ -42,7 +42,7 @@ for secret in .env .env.backup .env.prod; do
 done
 
 # 3. Permissions des fichiers de secrets (attendu : 600 ou 400).
-for secret in .env .env.backup .env.prod; do
+for secret in .env .env.local .env.backup .env.prod; do
     path="${PROJECT_DIR}/${secret}"
     if [[ -f "$path" ]]; then
         PERMS=$(stat -c "%a" "$path" 2>/dev/null || echo "???")

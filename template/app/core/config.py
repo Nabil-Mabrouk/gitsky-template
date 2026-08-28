@@ -31,7 +31,17 @@ MODULE_FLAGS: tuple[str, ...] = (
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # .env.local est chargé en second : ses valeurs priment sur .env pour une
+    # même clé (ordre du tuple, comportement pydantic-settings natif). Il
+    # contient les credentials opérateur qui n'ont aucune valeur dérivable à
+    # la génération (jetons GitHub, SMTP, chemins de la flotte) et qui, à
+    # l'inverse de .env, ne sont JAMAIS un fichier .jinja du template — donc
+    # structurellement jamais touché par `copier update`, quel que soit le
+    # mécanisme de fusion de copier (root cause d'une perte de valeurs
+    # manuelles observée une fois sur .env, jamais élucidée — voir chap_23).
+    model_config = SettingsConfigDict(
+        env_file=(".env", ".env.local"), extra="ignore"
+    )
 
     project_name: str = "gitsky-spike"
     # Placeholder DEV uniquement — ≥ 32 octets (RFC 7518 pour HS256).

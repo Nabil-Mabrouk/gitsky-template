@@ -20,6 +20,13 @@
 .env
 !frontend/.env
 
+# Credentials opérateur (jetons GitHub/SMTP, chemins flotte) qui n'ont pas de
+# valeur dérivable à la génération — jamais un .jinja du template, jamais
+# committé, jamais touché par `copier update`. Motif exact, même règle que
+# .env ci-dessus : pas de wildcard `.env.local*` sans re-générer un projet
+# réel pour vérifier qu'il ne casse pas le rendu de .env.local.example.jinja.
+.env.local
+
 # Artefacts Python locaux — jamais dans l'historique d'un projet livré.
 __pycache__/
 *.py[co]

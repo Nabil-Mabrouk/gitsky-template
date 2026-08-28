@@ -85,7 +85,15 @@ export default function App() {
       </nav>
       <main className="p-6">
         <Routes>
-          <Route path="/" element={<Navigate to="/learn" replace />} />
+          {/* module_fleet identifie le fleet dashboard lui-même (jamais un
+              projet métier ordinaire, Chap 2) : lui seul affiche sa propre
+              landing à la racine plutôt que d'être redirigé vers /learn —
+              un tableau de bord de flotte n'a pas de catalogue de contenu à
+              montrer en premier, mais gagne à expliquer GitSky avant login. */}
+          <Route
+            path="/"
+            element={modules.fleet ? <Landing /> : <Navigate to="/learn" replace />}
+          />
           <Route path="/learn" element={<Learn />} />
           <Route path="/learn/:slug" element={<TutorialDetail />} />
           <Route path="/learn/:slug/lessons/:lessonId" element={<LessonView />} />

@@ -46,6 +46,15 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+      # .env.local n'existe pas pour un projet sans credential opérateur
+      # (Chap 23) — `required: false` évite l'échec de `docker compose up`
+      # que provoquerait un `env_file:` classique pointant sur un fichier
+      # absent (comportement par défaut de Compose : erreur, pas un skip
+      # silencieux). Contient les credentials sans valeur dérivable à la
+      # génération (jeton GitHub, SMTP...) ; jamais lu par Compose pour SA
+      # PROPRE substitution ${VAR} (volumes ci-dessous) — seul .env l'est.
+      - path: .env.local
+        required: false
     environment:
       # Chaque projet a SON conteneur PostgreSQL, sans exception (isolation
       # CPU/IO et plafond de connexions par projet — Chap 18 §2).

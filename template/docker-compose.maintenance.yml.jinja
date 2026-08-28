@@ -1,0 +1,40 @@
+# docker-compose.maintenance.yml — page de maintenance pour {{ project_name }}.
+# (Chap 20/23, round sécurisation)
+#
+# PAS un override de docker-compose.yml (aucune fusion) : un fichier de
+# compose AUTONOME, invoqué SEUL (lifecycle-fleet.sh, shared_services) une
+# fois que `docker compose down` a arrêté le frontend/backend réels. Les deux
+# ne tournent JAMAIS en même temps — ils réclament les mêmes routes Traefik
+# (Host(`{{ project_domain }}`) et Host(`api.{{ project_domain }}`)), qu'un
+# seul jeu de conteneurs à la fois peut servir.
+#
+# Un seul conteneur statique (nginx, aucun build) sert la même page sur les
+# deux domaines : pendant une vraie coupure, le frontend ET l'API sont hors
+# service, pas la peine de distinguer les deux messages.
+#
+# Ne pas éditer à la main : modifier le template du générateur.
+services:
+  maintenance:
+    image: nginx:alpine
+    container_name: {{ project_name }}_maintenance
+    restart: unless-stopped
+    volumes:
+      - ./maintenance/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - proxy-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintenance-{{ project_name }}-front.rule=Host(`{{ project_domain }}`)"
+      - "traefik.http.routers.maintenance-{{ project_name }}-front.entrypoints=websecure"
+      - "traefik.http.routers.maintenance-{{ project_name }}-front.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.maintenance-{{ project_name }}-front.service=maintenance-{{ project_name }}"
+      - "traefik.http.routers.maintenance-{{ project_name }}-api.rule=Host(`api.{{ project_domain }}`)"
+      - "traefik.http.routers.maintenance-{{ project_name }}-api.entrypoints=websecure"
+      - "traefik.http.routers.maintenance-{{ project_name }}-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.maintenance-{{ project_name }}-api.service=maintenance-{{ project_name }}"
+      - "traefik.http.services.maintenance-{{ project_name }}.loadbalancer.server.port=80"
+
+networks:
+  proxy-net:
+    external: true
+    name: proxy-net

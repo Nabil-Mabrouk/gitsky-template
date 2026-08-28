@@ -36,6 +36,7 @@ const PROJECTS = [
     github_repo: "acme-fleet/pain-scraper",
     github_webhook_installed: true,
     health: "healthy",
+    lifecycle_state: "normal",
   },
   {
     id: 2,
@@ -47,6 +48,7 @@ const PROJECTS = [
     github_repo: null,
     github_webhook_installed: false,
     health: "unknown",
+    lifecycle_state: "stopped",
   },
   {
     id: 3,
@@ -58,6 +60,7 @@ const PROJECTS = [
     github_repo: "acme-fleet/silent-one",
     github_webhook_installed: false,
     health: "failing",
+    lifecycle_state: "maintenance",
   },
 ];
 
@@ -78,6 +81,18 @@ describe("FleetGrid", () => {
     expect(screen.getByText("healthy")).toHaveClass("admin-badge--success");
     expect(screen.getByText("unknown")).toHaveClass("admin-badge--neutral");
     expect(screen.getByText("failing")).toHaveClass("admin-badge--danger");
+  });
+
+  it("affiche un badge de cycle de vie seulement pour un état non normal", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(jsonResponse(PROJECTS)));
+
+    renderGrid();
+
+    await waitFor(() => expect(screen.getByText("pain-scraper")).toBeInTheDocument());
+    expect(screen.getByText("stopped")).toHaveClass("admin-badge--danger");
+    expect(screen.getByText("maintenance")).toHaveClass("admin-badge--warning");
+    // pain-scraper est "normal" : aucun badge de cycle de vie pour lui.
+    expect(screen.queryByText("normal")).not.toBeInTheDocument();
   });
 
   it("distingue un dépôt GitHub sans webhook d'un dépôt avec redeploy actif", async () => {

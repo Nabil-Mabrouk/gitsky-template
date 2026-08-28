@@ -166,6 +166,10 @@
         "failing": "Failing",
         "unknown": "Unknown"
       },
+      "lifecycle": {
+        "stopped": "Stopped",
+        "maintenance": "Maintenance"
+      },
       "githubOk": "GitHub linked — auto redeploy",
       "githubNoWebhook": "GitHub linked — webhook missing",
       "githubNone": "No GitHub repository",
@@ -182,6 +186,17 @@
       "runPromote": "Run promotion",
       "promoted": "Promoted:",
       "notPromoted": "Not promoted:",
+      "lifecycleTitle": "Lifecycle",
+      "lifecycleState": "Current state:",
+      "lifecycle": {
+        "normal": "online",
+        "stopped": "stopped",
+        "maintenance": "in maintenance"
+      },
+      "runStop": "Stop project",
+      "runStart": "Restart project",
+      "runMaintenance": "Switch to maintenance",
+      "runMaintenanceClear": "Exit maintenance",
       "archiveTitle": "Archive",
       "runArchive": "Archive project",
       "archived": "Project archived.",

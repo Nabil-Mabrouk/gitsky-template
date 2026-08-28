@@ -33,6 +33,7 @@ from app.modules.fleet import (
     github_integration,
     health_monitor,
     landing_collector_client,
+    lifecycle,
     publish,
 )
 from app.modules.fleet.models import FleetLifecycleEvent, MaintenanceRun, Project
@@ -294,8 +295,10 @@ async def list_projects(
     # chaque instance avant sérialisation, lu par ProjectRead.health (défaut
     # "unknown" si jamais posé, cf. schemas.py).
     statuses = await health_monitor.bulk_health_status(db, [p.name for p in projects])
+    states = await lifecycle.bulk_lifecycle_state(db, [p.name for p in projects])
     for project in projects:
         project.health = statuses.get(project.name, "unknown")
+        project.lifecycle_state = states.get(project.name, "normal")
 
     return projects
 
@@ -480,6 +483,17 @@ async def promote(
     )
 
 
+async def _get_project_or_404(db: AsyncSession, name: str) -> Project:
+    project = (
+        await db.execute(select(Project).where(Project.name == name))
+    ).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Projet introuvable"
+        )
+    return project
+
+
 @router.post("/projects/{name}/archive", response_model=ProjectRead)
 async def archive_project(
     name: str,
@@ -491,23 +505,93 @@ async def archive_project(
     Plus de scoring de signal, plus de shutdown déclenché par un cron : un
     projet s'archive uniquement quand un opérateur le décide depuis le
     dashboard. Idempotent (réarchiver un projet déjà archivé ne journalise
-    pas un second événement) — ni conteneurs ni domaine ne sont libérés ici,
-    c'est un marqueur d'état ; l'arrêt effectif (docker compose down, retrait
-    Traefik) reste une action d'infra séparée, pas encore automatisée.
+    pas un second événement).
+
+    Journalise AUSSI `stop_requested` (round sécurisation, Chap 20) : avant,
+    l'archivage ne faisait basculer qu'un flag DB, sans jamais arrêter les
+    conteneurs ni libérer le domaine Traefik — lacune explicitement admise
+    par ce chapitre. `stop_requested` alimente le même `/lifecycle/pending`
+    que `stop_project` ci-dessous : lifecycle-fleet.sh (shared_services)
+    exécute le `docker compose down` réel, sans code dupliqué ici.
     """
-    project = (
-        await db.execute(select(Project).where(Project.name == name))
-    ).scalar_one_or_none()
-    if project is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Projet introuvable"
-        )
+    project = await _get_project_or_404(db, name)
 
     if project.status != "archived":
         project.status = "archived"
         db.add(FleetLifecycleEvent(project_name=project.name, event_type="archived"))
+        db.add(FleetLifecycleEvent(project_name=project.name, event_type="stop_requested"))
         await db.commit()
         await db.refresh(project)
+    project.lifecycle_state = "stopped"
+    return project
+
+
+@router.post("/projects/{name}/stop", response_model=ProjectRead)
+async def stop_project(
+    name: str,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> Project:
+    """Arrêt réel (Chap 20/23, round sécurisation) — journalise l'intention,
+    ne touche jamais Docker directement : le dashboard n'a aucun accès
+    Docker (Chap 26 §choix d'architecture). lifecycle-fleet.sh
+    (shared_services), tournant sur l'hôte, exécute le `docker compose
+    down` réel via GET /lifecycle/pending.
+    """
+    project = await _get_project_or_404(db, name)
+    db.add(FleetLifecycleEvent(project_name=project.name, event_type="stop_requested"))
+    await db.commit()
+    project.lifecycle_state = "stopped"
+    return project
+
+
+@router.post("/projects/{name}/start", response_model=ProjectRead)
+async def start_project(
+    name: str,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> Project:
+    """Redémarrage réel — même patron que stop_project ci-dessus."""
+    project = await _get_project_or_404(db, name)
+    db.add(FleetLifecycleEvent(project_name=project.name, event_type="start_requested"))
+    await db.commit()
+    project.lifecycle_state = "normal"
+    return project
+
+
+@router.post("/projects/{name}/maintenance", response_model=ProjectRead)
+async def set_maintenance(
+    name: str,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> Project:
+    """Bascule en page de maintenance (Chap 20/23, round sécurisation) —
+    lifecycle-fleet.sh arrête le frontend/backend réels et démarre le
+    conteneur statique de docker-compose.maintenance.yml sur les mêmes
+    routes Traefik.
+    """
+    project = await _get_project_or_404(db, name)
+    db.add(
+        FleetLifecycleEvent(project_name=project.name, event_type="maintenance_requested")
+    )
+    await db.commit()
+    project.lifecycle_state = "maintenance"
+    return project
+
+
+@router.delete("/projects/{name}/maintenance", response_model=ProjectRead)
+async def clear_maintenance(
+    name: str,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> Project:
+    """Sort de la page de maintenance — même patron, sens inverse."""
+    project = await _get_project_or_404(db, name)
+    db.add(
+        FleetLifecycleEvent(project_name=project.name, event_type="maintenance_cleared")
+    )
+    await db.commit()
+    project.lifecycle_state = "normal"
     return project
 
 
@@ -753,3 +837,36 @@ async def pending_deploys(
     )
     events = result.scalars().all()
     return "\n".join(f"{e.id}\t{e.project_name}" for e in events)
+
+
+@router.get(
+    "/lifecycle/pending",
+    response_class=PlainTextResponse,
+    dependencies=[Depends(verify_fleet_service_token)],
+)
+async def pending_lifecycle(
+    since_id: int = 0,
+    db: AsyncSession = Depends(get_db),
+) -> str:
+    """Actions de cycle de vie en attente pour lifecycle-fleet.sh
+    (shared_services, Chap 20/23 round sécurisation) — même contrat exact
+    que `/deploys/pending` ci-dessus (texte brut, curseur `since_id` côté
+    script), une colonne de plus : `<id>\\t<project_name>\\t<action>`.
+    `stop`/`start`/`maintenance`/`maintenance-clear` sont les seules actions
+    émises (cf. lifecycle.PENDING_ACTIONS) ; `archive_project` journalise
+    aussi `stop_requested` et se retrouve donc naturellement ici.
+    """
+    result = await db.execute(
+        select(FleetLifecycleEvent)
+        .where(
+            FleetLifecycleEvent.event_type.in_(tuple(lifecycle.PENDING_ACTIONS)),
+            FleetLifecycleEvent.id > since_id,
+        )
+        .order_by(FleetLifecycleEvent.id)
+        .limit(200)
+    )
+    events = result.scalars().all()
+    return "\n".join(
+        f"{e.id}\t{e.project_name}\t{lifecycle.PENDING_ACTIONS[e.event_type]}"
+        for e in events
+    )

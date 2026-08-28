@@ -16,6 +16,9 @@ interface FleetProject {
   publish_status: string;
   github_repo: string | null;
   github_webhook_installed: boolean;
+  // Calculé par le backend (lifecycle.bulk_lifecycle_state, Chap 20/23) —
+  // "normal"/"stopped"/"maintenance", dernière intention opérateur.
+  lifecycle_state: string;
 }
 
 interface GithubRepoResult {
@@ -70,8 +73,21 @@ export default function ProjectActions() {
     const r = await apiFetch(`/api/fleet/projects/${name}/archive`, { method: "POST" });
     if (r.ok) {
       const result = await r.json();
-      setProject((p) => (p ? { ...p, status: result.status } : p));
+      setProject((p) => (p ? { ...p, status: result.status, lifecycle_state: result.lifecycle_state } : p));
       setArchived(true);
+    }
+  }
+
+  async function submitLifecycleAction(action: "stop" | "start" | "maintenance" | "maintenance-clear") {
+    const path =
+      action === "maintenance-clear"
+        ? `/api/fleet/projects/${name}/maintenance`
+        : `/api/fleet/projects/${name}/${action}`;
+    const method = action === "maintenance-clear" ? "DELETE" : "POST";
+    const r = await apiFetch(path, { method });
+    if (r.ok) {
+      const result = await r.json();
+      setProject((p) => (p ? { ...p, lifecycle_state: result.lifecycle_state } : p));
     }
   }
 
@@ -151,6 +167,47 @@ export default function ProjectActions() {
             : `${t("fleet.actions.notPromoted")} ${promoteResult.reason}`}
         </p>
       )}
+
+      <h2 className="mb-2 mt-6 text-lg font-semibold">{t("fleet.actions.lifecycleTitle")}</h2>
+      <p className="mb-2 text-sm text-black/60">
+        {t("fleet.actions.lifecycleState")} {t(`fleet.actions.lifecycle.${project.lifecycle_state}`, project.lifecycle_state)}
+      </p>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {project.lifecycle_state === "normal" && (
+          <>
+            <button
+              onClick={() => submitLifecycleAction("stop")}
+              className="rounded border p-2 text-sm font-medium"
+            >
+              {t("fleet.actions.runStop")}
+            </button>
+            <button
+              onClick={() => submitLifecycleAction("maintenance")}
+              className="rounded border p-2 text-sm font-medium"
+            >
+              {t("fleet.actions.runMaintenance")}
+            </button>
+          </>
+        )}
+        {project.lifecycle_state === "stopped" && (
+          <button
+            onClick={() => submitLifecycleAction("start")}
+            className="rounded p-2 text-sm font-medium text-white"
+            style={{ background: "var(--color-primary)" }}
+          >
+            {t("fleet.actions.runStart")}
+          </button>
+        )}
+        {project.lifecycle_state === "maintenance" && (
+          <button
+            onClick={() => submitLifecycleAction("maintenance-clear")}
+            className="rounded p-2 text-sm font-medium text-white"
+            style={{ background: "var(--color-primary)" }}
+          >
+            {t("fleet.actions.runMaintenanceClear")}
+          </button>
+        )}
+      </div>
 
       <h2 className="mb-2 mt-6 text-lg font-semibold">{t("fleet.actions.archiveTitle")}</h2>
       {project.status === "archived" ? (

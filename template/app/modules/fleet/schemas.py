@@ -29,6 +29,12 @@ class ProjectRead(BaseModel):
     # renvoient un ProjectRead (register/archive/promote/github/create...)
     # n'ont pas cette info à jour et ne doivent pas prétendre le contraire.
     health: str = "unknown"
+    # Calculé, jamais stocké (lifecycle.bulk_lifecycle_state, Chap 20/23) —
+    # "normal"/"stopped"/"maintenance", dernière intention opérateur
+    # journalisée. GET /projects l'attache pour toute la grille ; les
+    # endpoints stop/start/maintenance/archive le posent eux-mêmes (ils
+    # savent déjà exactement quel événement ils viennent de journaliser).
+    lifecycle_state: str = "normal"
 
 
 class PromoteRequest(BaseModel):

@@ -23,6 +23,9 @@ interface FleetProject {
   // Calculé par le backend (health_monitor.bulk_health_status, Chap 28) —
   // "unknown" tant qu'aucun balayage de disponibilité n'a encore eu lieu.
   health: string;
+  // Calculé par le backend (lifecycle.bulk_lifecycle_state, Chap 20/23) —
+  // "normal"/"stopped"/"maintenance", dernière intention opérateur.
+  lifecycle_state: string;
 }
 
 type SortKey = "name" | "domain" | "status" | "publish_status" | "health";
@@ -42,6 +45,11 @@ const PUBLISH_VARIANT: Record<string, BadgeVariant> = {
   live: "success",
   preview: "warning",
   draft: "neutral",
+};
+
+const LIFECYCLE_VARIANT: Record<string, BadgeVariant> = {
+  stopped: "danger",
+  maintenance: "warning",
 };
 
 export default function FleetGrid() {
@@ -139,6 +147,11 @@ export default function FleetGrid() {
             <div className="flex flex-wrap gap-2">
               <Badge variant={STATUS_VARIANT[p.status] ?? "neutral"}>{p.status}</Badge>
               <Badge variant={PUBLISH_VARIANT[p.publish_status] ?? "neutral"}>{p.publish_status}</Badge>
+              {p.lifecycle_state !== "normal" && (
+                <Badge variant={LIFECYCLE_VARIANT[p.lifecycle_state] ?? "neutral"}>
+                  {t(`fleet.grid.lifecycle.${p.lifecycle_state}`, p.lifecycle_state)}
+                </Badge>
+              )}
             </div>
 
             <div className="mt-auto flex items-center justify-between border-t pt-3 text-sm" style={{ borderColor: "var(--admin-border)" }}>

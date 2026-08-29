@@ -150,7 +150,16 @@ _tasks:
     when: "{{ _copier_operation == 'copy' }}"
   - command: "{{ _copier_python }} {{ _copier_conf.src_path }}/tasks/register_fleet.py {{ project_name }}"
     when: "{{ _copier_operation == 'copy' }}"
-  - command: "git init -q"
+  # -b main : bug de prod réel (cryptokilla, 2026-08-29) — sans ce flag,
+  # `git init` retombe sur `init.defaultBranch` de l'installation git
+  # locale, "master" sur ce serveur. Le webhook GitHub filtre les push sur
+  # `fleet_github_deploy_branch` (défaut "main", app/core/config.py) : un
+  # premier push vers `master` était accepté par GitHub (200) mais
+  # silencieusement ignoré par `is_deploy_push` — jamais de
+  # `deploy_triggered`, jamais de premier déploiement, sans aucune erreur
+  # visible nulle part. Fixé à la source plutôt que de compter sur
+  # l'installation git de chaque serveur.
+  - command: "git init -q -b main"
     when: "{{ _copier_operation == 'copy' }}"
   - command: "git add -A"
     when: "{{ _copier_operation == 'copy' }}"

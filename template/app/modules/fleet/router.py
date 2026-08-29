@@ -237,9 +237,25 @@ async def create_project(
 
     pushed = False
     if clone_url:
+        # Bug de prod réel (Chap 27) : `clone_url` (retour de l'API GitHub
+        # en mode create, ou construit tel quel en mode link) n'embarque
+        # JAMAIS d'identifiants — GitHub ne les renvoie jamais dans ses
+        # réponses API, et le mode link ne fait que préfixer le nom du
+        # dépôt. `git push` sur cette URL nue tombe en prompt interactif
+        # username/password (jamais satisfiable sur un serveur sans
+        # terminal), pour create ET link — trouvé en testant le mode link
+        # en conditions réelles (cryptokilla, 2026-08-29). Le même
+        # FLEET_GITHUB_TOKEN que create_repo/create_webhook doit être
+        # embarqué dans l'URL utilisée pour LE PUSH SEULEMENT — jamais
+        # dans `clone_url`/`github_repo`, qui restent stockés/affichés
+        # tels quels (DB, réponse API, warnings).
+        push_url = clone_url
+        token = os.environ.get("FLEET_GITHUB_TOKEN", "")
+        if token and github_repo:
+            push_url = f"https://{token}@github.com/{github_repo}.git"
         try:
             git_client.push_initial_commit(
-                project_dir, clone_url, settings.fleet_github_deploy_branch
+                project_dir, push_url, settings.fleet_github_deploy_branch
             )
             pushed = True
         except Exception:

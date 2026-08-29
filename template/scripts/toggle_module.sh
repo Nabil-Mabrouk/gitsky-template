@@ -10,11 +10,15 @@
 #              PAS "fleet" — voir plus bas.
 #
 # Fait, dans l'ordre : (1) vérifie que le module existe et n'est pas déjà
-# dans l'état demandé, (2) bascule le flag dans .env, (3) applique les
-# migrations en attente (`docker compose run --rm migrate` — idempotent,
+# dans l'état demandé, (2) bascule le flag dans .env, (3) bascule la MÊME
+# clé dans .copier-answers.yml — bug de prod réel, corrigé le jour même où
+# trouvé : sans cette étape, un `copier update` ultérieur re-rend .env.jinja
+# depuis la réponse `modules:` STOCKÉE (jamais depuis le contenu actuel de
+# .env) et écrase silencieusement le flag tout juste basculé, (4) applique
+# les migrations en attente (`docker compose run --rm migrate` — idempotent,
 # migrate.py ne fait que ce qui manque pour les modules réellement actifs,
-# Chap 4), (4) recrée le backend (pas de rebuild : pur changement d'env),
-# (5) vérifie via /health que le nouvel état est bien pris en compte avant
+# Chap 4), (5) recrée le backend (pas de rebuild : pur changement d'env),
+# (6) vérifie via /health que le nouvel état est bien pris en compte avant
 # de déclarer la réussite.
 # =============================================================================
 
@@ -62,6 +66,32 @@ fi
 
 sed -i "s/^${FLAG_NAME}=.*/${FLAG_NAME}=${NEW_VALUE}/" "$ENV_FILE"
 echo "${FLAG_NAME}=${NEW_VALUE} écrit dans .env."
+
+# Sans ceci, un `copier update` ultérieur re-rend .env.jinja depuis la
+# réponse `modules:` stockée ici — jamais depuis .env — et reviendrait
+# silencieusement sur ce changement au prochain update.
+ANSWERS_FILE="${PROJECT_DIR}/.copier-answers.yml"
+python3 - "$ANSWERS_FILE" "$MODULE" "$NEW_VALUE" <<'PY'
+import re
+import sys
+
+path, key, value = sys.argv[1], sys.argv[2], sys.argv[3]
+content = open(path, encoding="utf-8").read()
+m = re.search(r"^modules:\s*\{([^}]*)\}", content, re.MULTILINE)
+pairs = {}
+if m and m.group(1).strip():
+    for part in m.group(1).split(","):
+        k, v = part.split(":")
+        pairs[k.strip()] = v.strip()
+pairs[key] = value
+new_line = "modules: {" + ", ".join(f"{k}: {v}" for k, v in pairs.items()) + "}"
+if m:
+    content = content[: m.start()] + new_line + content[m.end() :]
+else:
+    content = f"modules: {{{key}: {value}}}\n" + content
+open(path, "w", encoding="utf-8").write(content)
+PY
+echo "modules.${MODULE}=${NEW_VALUE} écrit dans .copier-answers.yml."
 
 echo "Application des migrations en attente..."
 (cd "$PROJECT_DIR" && docker compose run --rm migrate)

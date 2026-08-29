@@ -22,11 +22,11 @@ function jsonResponse(body: unknown): Response {
   });
 }
 
-function stubHealth(modules: Record<string, boolean>) {
+function stubHealth(modules: Record<string, boolean> = {}) {
   // mockImplementation (pas mockResolvedValue) : une Response fraîche à
   // chaque appel — un Body ne se lit qu'une fois (`.json()`). Discrimine par
-  // URL : quand la redirection monte <Learn>, son propre fetch (tutorials)
-  // attend un tableau, pas l'objet `modules` de /health.
+  // URL : Learn.tsx fait son propre fetch (tutorials) qui attend un
+  // tableau, pas l'objet `modules` de /health.
   vi.stubGlobal(
     "fetch",
     vi.fn().mockImplementation((url: string) => {
@@ -46,36 +46,42 @@ function renderAppAt(path: string) {
   );
 }
 
-describe("App — routage racine selon les modules actifs", () => {
-  it("affiche la landing à la racine pour le fleet dashboard (module_fleet actif)", async () => {
-    // Bienvenue : hero de dev-fixtures/landing-manifest.json (Chap 24).
-    stubHealth({ auth: true, admin: true, fleet: true });
+describe("App — la racine est toujours la landing (Chap 24, round layout)", () => {
+  // Bienvenue : hero de dev-fixtures/landing-manifest.json.
 
+  it("affiche la landing à la racine sans aucun module actif", async () => {
+    stubHealth({ auth: true });
     renderAppAt("/");
+    await waitFor(() => expect(screen.getByText("Bienvenue")).toBeInTheDocument());
+  });
 
+  it("affiche TOUJOURS la landing à la racine même avec des modules produit actifs", async () => {
+    // Avant ce round : activer un module (ex. admin) faisait disparaître la
+    // landing (redirection vers /learn) — exactement le bug rapporté par
+    // l'utilisateur sur politique-ia après activation de MODULE_ADMIN.
+    stubHealth({ auth: true, admin: true, tutorials: true });
+    renderAppAt("/");
     await waitFor(() => expect(screen.getByText("Bienvenue")).toBeInTheDocument());
     expect(screen.queryByText("learn.title")).not.toBeInTheDocument();
   });
 
-  it("redirige toujours vers /learn pour un projet produit sans module_fleet", async () => {
-    // Régression : un projet ordinaire (ex. monétisation, onboarding) garde
-    // le comportement existant — seul module_fleet change quelque chose ici.
-    stubHealth({ auth: true, admin: true, tutorials: true });
-
+  it("affiche TOUJOURS la landing à la racine pour le fleet dashboard (module_fleet actif)", async () => {
+    stubHealth({ auth: true, admin: true, fleet: true });
     renderAppAt("/");
+    await waitFor(() => expect(screen.getByText("Bienvenue")).toBeInTheDocument());
+  });
 
+  it("reste joignable sur /learn en URL directe", async () => {
+    stubHealth({ auth: true, tutorials: true });
+    renderAppAt("/learn");
     await waitFor(() => expect(screen.getByText("learn.title")).toBeInTheDocument());
     expect(screen.queryByText("Bienvenue")).not.toBeInTheDocument();
   });
 
-  it("affiche la landing nue (sans chrome) quand aucun module produit n'est actif", async () => {
-    // Régression : un T0 pur (auth core seulement) reste inchangé.
+  it("reste joignable sur /login en URL directe", async () => {
     stubHealth({ auth: true });
-
-    renderAppAt("/");
-
-    await waitFor(() => expect(screen.getByText("Bienvenue")).toBeInTheDocument());
-    // Pas de barre de nav (lien /learn) dans ce cas-là.
-    expect(screen.queryByText("nav.learn")).not.toBeInTheDocument();
+    renderAppAt("/login");
+    await waitFor(() => expect(screen.getByText("auth.login.title")).toBeInTheDocument());
+    expect(screen.queryByText("Bienvenue")).not.toBeInTheDocument();
   });
 });

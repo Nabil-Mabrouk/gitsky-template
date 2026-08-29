@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
 import { Routes, Route, Link, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "./context/AuthContext";
-import { apiFetch } from "./api";
 import Landing from "./pages/Landing";
 import Learn from "./pages/Learn";
 import Login from "./pages/Login";
@@ -22,45 +20,20 @@ import AdminRoute from "./pages/admin/AdminRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AcceptInvite from "./pages/AcceptInvite";
 
-export default function App() {
+// La racine est TOUJOURS la landing (Chap 24, round layout) — plus de
+// dépendance aux modules actifs pour cette décision (l'ancien
+// `hasProductModules` faisait disparaître la landing dès qu'un module au-
+// delà de `auth` était actif, y compris pour fleet-dashboard lui-même).
+// Le reste de l'app (catalogue, admin, login) vit sous un second groupe de
+// routes descendant (`path="/*"`) qui coexiste avec `/` au lieu de le
+// remplacer — patron "Descendant <Routes>" de React Router v6 : les chemins
+// ci-dessous sont relatifs à ce préfixe, pas absolus.
+function AppShell() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
-  const [modules, setModules] = useState<Record<string, boolean> | null>(null);
-
-  useEffect(() => {
-    apiFetch("/health")
-      .then(async (r) =>
-        r.ok ? ((await r.json()) as { modules?: Record<string, boolean> }) : null,
-      )
-      .then((data) => setModules(data?.modules ?? {}))
-      .catch(() => setModules({}));
-  }, []);
 
   const toggleLang = () =>
     i18n.changeLanguage(i18n.language.startsWith("fr") ? "en" : "fr");
-
-  // Décision au runtime, pas au build (Chap 24) : /health est public et
-  // renvoie déjà `modules` — évite de dupliquer le bundle selon les modules
-  // actifs pour ce seul aspect (patron déjà établi par AdminLayout/
-  // `/api/admin/modules`).
-  if (modules === null) return null;
-
-  // Catalogue de modules à plat (Chap 2) : plus de palier T0/T1/T2. Un projet
-  // qui n'a activé aucun module au-delà du core (auth) n'a rien d'autre à
-  // naviguer qu'une landing marketing — pas de chrome de nav au-dessus.
-  // Remplace l'ancien clivage par tier ; un vrai redesign du dashboard reste
-  // prévu en Phase F.
-  const hasProductModules = Object.entries(modules).some(
-    ([key, active]) => key !== "auth" && active,
-  );
-
-  if (!hasProductModules) {
-    return (
-      <Routes>
-        <Route path="/" element={<Landing />} />
-      </Routes>
-    );
-  }
 
   return (
     <div className="min-h-screen">
@@ -85,22 +58,13 @@ export default function App() {
       </nav>
       <main className="p-6">
         <Routes>
-          {/* module_fleet identifie le fleet dashboard lui-même (jamais un
-              projet métier ordinaire, Chap 2) : lui seul affiche sa propre
-              landing à la racine plutôt que d'être redirigé vers /learn —
-              un tableau de bord de flotte n'a pas de catalogue de contenu à
-              montrer en premier, mais gagne à expliquer GitSky avant login. */}
-          <Route
-            path="/"
-            element={modules.fleet ? <Landing /> : <Navigate to="/learn" replace />}
-          />
-          <Route path="/learn" element={<Learn />} />
-          <Route path="/learn/:slug" element={<TutorialDetail />} />
-          <Route path="/learn/:slug/lessons/:lessonId" element={<LessonView />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/invite/:token" element={<AcceptInvite />} />
+          <Route path="learn" element={<Learn />} />
+          <Route path="learn/:slug" element={<TutorialDetail />} />
+          <Route path="learn/:slug/lessons/:lessonId" element={<LessonView />} />
+          <Route path="login" element={<Login />} />
+          <Route path="invite/:token" element={<AcceptInvite />} />
           <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route path="admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="fleet" replace />} />
               <Route path="fleet" element={<FleetGrid />} />
               <Route path="fleet/new" element={<CreateProject />} />
@@ -117,5 +81,14 @@ export default function App() {
         </Routes>
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/*" element={<AppShell />} />
+    </Routes>
   );
 }

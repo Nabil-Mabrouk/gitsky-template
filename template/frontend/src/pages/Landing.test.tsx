@@ -1,5 +1,24 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+
+// Navbar (Chap 24, round layout) utilise useAuth() + son propre GET
+// /health — même mocks que App.test.tsx pour un rendu silencieux, sans
+// réseau ni AuthProvider réel.
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => ({ user: null, logout: vi.fn() }),
+}));
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+vi.stubGlobal(
+  "fetch",
+  vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({ modules: {} }))),
+);
 
 // landing-manifest.json est la fixture de dev committée (Chap 24) — copier
 // l'exclut des projets générés, seul landing-manifest.json.jinja y écrit ;
@@ -44,7 +63,7 @@ vi.mock("../landing-manifest.json", () => ({
 import Landing from "./Landing";
 
 describe("Landing", () => {
-  it("rend chaque type de bloc du manifest", () => {
+  it("rend chaque type de bloc du manifest", async () => {
     render(<Landing />);
 
     expect(screen.getByText("mon-projet")).toBeInTheDocument();
@@ -54,8 +73,13 @@ describe("Landing", () => {
     expect(screen.getByText("Prix ?")).toBeInTheDocument();
     expect(screen.getByText("Pro")).toBeInTheDocument();
     expect(screen.getByText("Rejoignez-nous")).toBeInTheDocument();
-    // Le CTA de la nav réutilise le libellé du bloc email_capture.
-    expect(screen.getAllByText("S'inscrire")).toHaveLength(2);
+    // Le Navbar (Chap 24, round layout) n'est plus un CTA marketing — le
+    // libellé du bloc email_capture n'apparaît qu'une fois, dans le bloc.
+    expect(screen.getAllByText("S'inscrire")).toHaveLength(1);
+    // Footer par défaut, toujours présent.
+    await waitFor(() =>
+      expect(screen.getByText(/© \d{4} mon-projet/)).toBeInTheDocument(),
+    );
   });
 
   it("ignore un type de bloc inconnu sans planter", () => {

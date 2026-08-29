@@ -73,7 +73,17 @@
   backdrop-filter: blur(6px); border-bottom: 1px solid var(--border);
 }
 .landing .site-nav .brand { font-weight: 700; color: var(--text); text-decoration: none; font-family: var(--font-family-display); }
-.landing .site-nav .btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+.landing .site-nav .btn { padding: 0.5rem 1rem; font-size: 0.9rem; border: none; font: inherit; }
+.landing .site-nav-links { display: flex; align-items: center; gap: 1.25rem; }
+.landing .site-nav-links a:not(.btn) { color: var(--text); text-decoration: none; font-size: 0.95rem; }
+.landing .site-nav-links a:not(.btn):hover { opacity: 0.75; }
+
+.landing .site-footer {
+  padding: 1.5rem; text-align: center; max-width: none;
+  border-top: 1px solid var(--border); color: var(--text); opacity: 0.7;
+  font-size: 0.875rem;
+}
+.landing .site-footer p { margin: 0; }
 
 /* Apparition douce au scroll — CSS pur (scroll-driven animations), AUCUN
    JS : @supports dégrade proprement (contenu simplement visible, jamais

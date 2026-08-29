@@ -1,0 +1,83 @@
+# Guide de personnalisation — {{ project_name }}
+
+Ce fichier s'adresse à vous **et** à l'IA qui vous assiste (Claude Code,
+Codex, ou autre) une fois ce projet cloné en local. Il dit ce qui vous
+appartient, ce qui est châssis, ce qu'il ne faut **jamais** toucher
+directement, et quoi vérifier avant de commit/push. Régénéré à chaque
+`copier update` — pas un document figé à tenir à jour à la main.
+
+## Cycle de vie de ce projet
+
+1. Généré côté serveur (wizard ou Studio), enregistré dans la flotte,
+   déployé une première fois.
+2. Vous le clonez en local, personnalisez le layout et ajoutez vos
+   fonctionnalités métier avec l'IA de votre choix, committez, poussez.
+3. Le push redéclenche automatiquement le pipeline de déploiement déjà en
+   place (webhook → redeploy) — rien à faire côté serveur pour ça.
+
+Le point qui compte : votre personnalisation **ne doit jamais casser** le
+contrat structurel avec le fleet dashboard (§« Ne touchez jamais »
+ci-dessous) — c'est ce contrat qui permet au dashboard de continuer à
+suivre correctement ce projet et au déploiement de se dérouler sans
+accroc, quoi que vous ayez changé par ailleurs.
+
+## À vous — personnalisation attendue
+
+- `frontend/src/components/layout/Navbar.tsx` et
+  `frontend/src/components/layout/Footer.tsx` — générés avec des valeurs
+  par défaut minimales (Chap 24), à votre charge de les personnaliser
+  (design, liens, marque).
+- `frontend/src/pages/Landing.tsx` — l'assemblage de la page d'accueil
+  (toujours affichée à `/`, quels que soient les modules actifs).
+- `frontend/src/landing.css` — le style de la landing.
+- `app/domain/models.py` et `app/domain/routers.py` — le seul emplacement
+  conçu pour votre logique métier ; survit à `copier update` par
+  construction (rien dans le template ne les régénère après le scaffold
+  initial).
+- Tout nouveau fichier que vous ajoutez.
+
+## Châssis — partagé, mis à jour par `copier update`
+
+Le reste de `app/modules/` et de `frontend/src/` (composants de blocs
+Studio, pages admin, etc.) est propagé/fusionné à chaque mise à jour du
+template. L'éditer directement est possible — c'est accepter de résoudre
+un conflit de fusion à chaque `copier update` futur, un choix à faire les
+yeux ouverts, pas par défaut. Voir [`MODULES.md`](MODULES.md) pour les
+points d'extension réels de chaque module actif sur ce projet.
+
+## Ne touchez jamais directement
+
+Ces éléments forment le contrat structurel avec le fleet dashboard — les
+modifier casse le suivi de ce projet dans la flotte ou son déploiement,
+pas seulement son propre fonctionnement :
+
+- La forme de `GET /health` et son champ `modules` (`app/core/main.py`) —
+  c'est ce que le fleet dashboard interroge pour savoir si ce projet est
+  disponible et quels modules il a actifs.
+- Les labels Traefik et les noms de conteneurs (`docker-compose.yml`,
+  `Dockerfile`) — `{{ project_name }}_backend`/`_frontend`/`_db` sont
+  attendus tels quels par les scripts de déploiement/cycle de vie de la
+  flotte.
+- `.env` et `.env.local` — gérés par `scripts/toggle_module.sh` et les
+  scripts `scripts/rotate_*.sh`, jamais édités à la main pour leur
+  structure (une valeur ponctuelle, oui ; retirer/renommer une clé, non).
+- `MODULE_FLAGS` dans `app/core/config.py` — le catalogue de modules lui-
+  même.
+
+## Avant de commit/push
+
+```bash
+cd frontend && npm run typecheck && npm run test && npm run build
+```
+
+Si vous avez touché `app/domain/` : ajoutez et lancez vos propres tests
+(`pytest`) — ce dossier n'a pas de suite de tests fournie par le template,
+c'est la vôtre à construire. Si vous avez touché `Dockerfile` ou
+`requirements.txt` : `docker compose build` en local avant de pousser.
+
+## Contrat de déploiement
+
+Un push sur la branche de déploiement redéclenche l'auto-deploy (webhook
+GitHub). `copier update` reste la façon de récupérer les futurs correctifs
+du châssis — un conflit de fusion sur un fichier que vous avez
+personnalisé est **attendu**, pas un signe que quelque chose est cassé.

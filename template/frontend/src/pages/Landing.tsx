@@ -7,6 +7,8 @@ import Testimonial from "../components/blocks/Testimonial";
 import Faq from "../components/blocks/Faq";
 import Pricing from "../components/blocks/Pricing";
 import EmailCapture from "../components/blocks/EmailCapture";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
 import "../landing.css";
 
 const data = manifest as LandingManifest;
@@ -50,20 +52,9 @@ export default function Landing() {
     };
   }, []);
 
-  const captureBlock = data.blocks.find((b) => b.type === "email_capture");
-
   return (
     <div className="landing" data-skin={data.skin}>
-      <nav className="site-nav">
-        <a className="brand" href="#">
-          {data.project}
-        </a>
-        {captureBlock && (
-          <a className="btn" href="#email-capture">
-            {captureBlock.cta}
-          </a>
-        )}
-      </nav>
+      <Navbar project={data.project} />
       {data.blocks.map((block, i) => {
         switch (block.type) {
           case "hero":
@@ -84,6 +75,7 @@ export default function Landing() {
             return null;
         }
       })}
+      <Footer project={data.project} />
     </div>
   );
 }

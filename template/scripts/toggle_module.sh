@@ -70,26 +70,56 @@ echo "${FLAG_NAME}=${NEW_VALUE} écrit dans .env."
 # Sans ceci, un `copier update` ultérieur re-rend .env.jinja depuis la
 # réponse `modules:` stockée ici — jamais depuis .env — et reviendrait
 # silencieusement sur ce changement au prochain update.
+#
+# `modules:` peut être en style flow sur une ligne (`modules: {admin: true}`,
+# ce que copier écrit à la création) OU en style bloc sur plusieurs lignes
+# indentées (`modules:\n    admin: true`, ce que copier réécrit lui-même à
+# un `copier update` ultérieur — constaté empiriquement sur politique-ia,
+# pas documenté). Les deux formes DOIVENT être comprises en lecture, sous
+# peine de dupliquer la clé `modules:` au lieu de la mettre à jour. Toujours
+# réécrit en style flow (plus simple à reparser la prochaine fois) —
+# `copier update` peut le reformater en bloc ensuite, sans conséquence : ce
+# script sait relire les deux.
 ANSWERS_FILE="${PROJECT_DIR}/.copier-answers.yml"
 python3 - "$ANSWERS_FILE" "$MODULE" "$NEW_VALUE" <<'PY'
 import re
 import sys
 
 path, key, value = sys.argv[1], sys.argv[2], sys.argv[3]
-content = open(path, encoding="utf-8").read()
-m = re.search(r"^modules:\s*\{([^}]*)\}", content, re.MULTILINE)
+lines = open(path, encoding="utf-8").read().splitlines(keepends=True)
+
+start = end = None
 pairs = {}
-if m and m.group(1).strip():
-    for part in m.group(1).split(","):
-        k, v = part.split(":")
-        pairs[k.strip()] = v.strip()
+for i, line in enumerate(lines):
+    if not line.startswith("modules:"):
+        continue
+    start = i
+    rest = line[len("modules:"):].strip()
+    if rest.startswith("{"):
+        inner = rest.strip("{}").strip()
+        if inner:
+            for part in inner.split(","):
+                k, v = part.split(":")
+                pairs[k.strip()] = v.strip()
+        end = i + 1
+    else:
+        end = i + 1
+        while end < len(lines):
+            m = re.match(r"^\s+([A-Za-z0-9_]+):\s*(\S+)\s*$", lines[end])
+            if not m:
+                break
+            pairs[m.group(1)] = m.group(2)
+            end += 1
+    break
+
 pairs[key] = value
-new_line = "modules: {" + ", ".join(f"{k}: {v}" for k, v in pairs.items()) + "}"
-if m:
-    content = content[: m.start()] + new_line + content[m.end() :]
+new_line = "modules: {" + ", ".join(f"{k}: {v}" for k, v in pairs.items()) + "}\n"
+
+if start is not None:
+    lines[start:end] = [new_line]
 else:
-    content = f"modules: {{{key}: {value}}}\n" + content
-open(path, "w", encoding="utf-8").write(content)
+    lines.insert(0, new_line)
+open(path, "w", encoding="utf-8").write("".join(lines))
 PY
 echo "modules.${MODULE}=${NEW_VALUE} écrit dans .copier-answers.yml."
 

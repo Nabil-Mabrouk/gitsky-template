@@ -84,9 +84,14 @@ esac
 
 # `-v email=` + `:'email'` : psql substitue et met entre guillemets SQL
 # correctement, jamais d'interpolation directe d'une valeur venant de
-# l'opérateur dans le texte de la requête.
-docker exec "${PROJECT_NAME}_db" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-    -v email="$EMAIL" -c "UPDATE users SET role = 'admin' WHERE email = :'email';"
+# l'opérateur dans le texte de la requête. Bug de prod réel (cryptokilla,
+# 2026-08-30) : psql n'applique CETTE substitution que pour un script lu
+# sur stdin/`-f` — jamais pour `-c` (documenté, mais silencieux : le
+# serveur reçoit `:'email'` tel quel et le rejette avec une erreur de
+# syntaxe SQL, pas un message psql). D'où `-i` (stdin) sur `docker exec`
+# et le SQL passé par un here-string plutôt que `-c`.
+docker exec -i "${PROJECT_NAME}_db" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+    -v email="$EMAIL" <<< "UPDATE users SET role = 'admin' WHERE email = :'email';"
 
 echo "✓ ${EMAIL} est maintenant admin sur ${PROJECT_NAME}."
 if [[ $GENERATED -eq 1 && "$RESULT" == "created" ]]; then

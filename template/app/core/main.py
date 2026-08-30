@@ -176,6 +176,7 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict:
             "analytics": settings.module_analytics,
             "security_middleware": settings.module_security_middleware,
             "agentic": settings.module_agentic,
+            "i18n": settings.module_i18n,
             "tutorials": settings.module_tutorials,
             "onboarding": settings.module_onboarding,
             "monetization_shop": settings.module_monetization_shop,

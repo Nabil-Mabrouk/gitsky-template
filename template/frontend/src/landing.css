@@ -40,8 +40,16 @@
   }
 }
 
-/* Base partagée par tous les skins */
-.landing { color: var(--text); background: var(--bg); line-height: 1.5; }
+/* Base partagée par tous les skins ET par .site-shell (App.tsx::AppShell,
+   round theming) — seule cette règle de fond est commune aux deux ; les
+   règles plus spécifiques ci-dessous (h2/h3/section/badge/hero...) restent
+   propres à .landing, le contenu routé (Learn/Login/Admin) garde ses
+   propres styles Tailwind. */
+.landing, .site-shell { color: var(--text); background: var(--bg); line-height: 1.5; }
+/* Reprend le rôle de l'ancienne classe Tailwind min-h-screen d'AppShell
+   (App.tsx) — seul .site-shell en a besoin, .landing est déjà assez haute
+   avec son contenu. */
+.site-shell { min-height: 100vh; }
 .landing h1, .landing h2 { font-family: var(--font-family-display); }
 /* L'ancienne page statique n'avait AUCUN reset CSS : ces tailles/graisses
    venaient gratuitement des styles par défaut du navigateur (h2/h3 gras et

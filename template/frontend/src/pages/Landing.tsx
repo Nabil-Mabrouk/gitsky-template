@@ -54,7 +54,7 @@ export default function Landing() {
 
   return (
     <div className="landing" data-skin={data.skin}>
-      <Navbar project={data.project} />
+      <Navbar />
       {data.blocks.map((block, i) => {
         switch (block.type) {
           case "hero":
@@ -75,7 +75,7 @@ export default function Landing() {
             return null;
         }
       })}
-      <Footer project={data.project} />
+      <Footer />
     </div>
   );
 }

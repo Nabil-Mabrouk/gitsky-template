@@ -1,0 +1,22 @@
+/* branding.local.css — point d'extension pour personnaliser la marque
+   après génération (Chap 24, round theming). Contrairement à theme.css
+   (généré depuis le branding Studio, ne pas éditer à la main), ce fichier
+   n'est jamais re-templaté par copier update après le scaffold initial —
+   comme components/layout/{Navbar,Footer}.tsx, c'est un fichier normal du
+   châssis, généré vide, à vous ensuite.
+
+   Importé APRÈS theme.css dans index.css : une redéfinition ici gagne sur
+   celle de theme.css (dernière déclaration de la custom property sur
+   :root) — pas de !important, pas de nouveau mécanisme à apprendre.
+
+   Propriétés personnalisables (définies par défaut dans theme.css) :
+   --color-primary
+   --color-primary-foreground
+   --font-family-base
+   --font-family-display
+
+   Exemple :
+   :root {
+     --color-primary: #16a34a;
+   }
+*/

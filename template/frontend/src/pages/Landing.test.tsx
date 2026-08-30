@@ -1,11 +1,18 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-// Navbar (Chap 24, round layout) utilise useAuth() + son propre GET
-// /health — même mocks que App.test.tsx pour un rendu silencieux, sans
-// réseau ni AuthProvider réel.
+// Navbar (Chap 24, round layout/theming) utilise useAuth() + useTranslation()
+// + son propre GET /health (project ET modules) — mêmes mocks que
+// App.test.tsx pour un rendu silencieux, sans réseau ni AuthProvider réel.
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({ user: null, logout: vi.fn() }),
+}));
+
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: "fr", changeLanguage: vi.fn() },
+  }),
 }));
 
 function jsonResponse(body: unknown): Response {
@@ -17,7 +24,9 @@ function jsonResponse(body: unknown): Response {
 
 vi.stubGlobal(
   "fetch",
-  vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({ modules: {} }))),
+  vi.fn().mockImplementation(() =>
+    Promise.resolve(jsonResponse({ project: "mon-projet", modules: {} })),
+  ),
 );
 
 // landing-manifest.json est la fixture de dev committée (Chap 24) — copier
@@ -66,7 +75,9 @@ describe("Landing", () => {
   it("rend chaque type de bloc du manifest", async () => {
     render(<Landing />);
 
-    expect(screen.getByText("mon-projet")).toBeInTheDocument();
+    // Marque du Navbar : peuplée de façon async (GET /health), comme le
+    // copyright du Footer plus bas.
+    await waitFor(() => expect(screen.getByText("mon-projet")).toBeInTheDocument());
     expect(screen.getByText("Bienvenue")).toBeInTheDocument();
     expect(screen.getByText("Rapide")).toBeInTheDocument();
     expect(screen.getByText("Génial")).toBeInTheDocument();

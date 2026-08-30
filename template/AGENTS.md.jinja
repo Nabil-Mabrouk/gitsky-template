@@ -29,7 +29,13 @@ accroc, quoi que vous ayez changé par ailleurs.
   (design, liens, marque).
 - `frontend/src/pages/Landing.tsx` — l'assemblage de la page d'accueil
   (toujours affichée à `/`, quels que soient les modules actifs).
-- `frontend/src/landing.css` — le style de la landing.
+- `frontend/src/landing.css` — le style de la landing **et** de `AppShell`
+  (Login/Apprendre/Admin réutilisent le même `Navbar`/`Footer`, Chap 24).
+- `frontend/src/branding.local.css` — redéfinissez ici `--color-primary`/
+  `--font-family-base`/etc. sans toucher `theme.css` (généré depuis le
+  branding du Studio, lui reste châssis) : importé après lui, une
+  redéfinition ici gagne automatiquement (dernière déclaration de la
+  custom property sur `:root`, pas de `!important` requis).
 - `app/domain/models.py` et `app/domain/routers.py` — le seul emplacement
   conçu pour votre logique métier ; survit à `copier update` par
   construction (rien dans le template ne les régénère après le scaffold

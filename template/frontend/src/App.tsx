@@ -1,6 +1,4 @@
-import { Routes, Route, Link, Navigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useAuth } from "./context/AuthContext";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Learn from "./pages/Learn";
 import Login from "./pages/Login";
@@ -19,6 +17,8 @@ import LessonView from "./pages/LessonView";
 import AdminRoute from "./pages/admin/AdminRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AcceptInvite from "./pages/AcceptInvite";
+import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
 
 // La racine est TOUJOURS la landing (Chap 24, round layout) — plus de
 // dépendance aux modules actifs pour cette décision (l'ancien
@@ -28,34 +28,17 @@ import AcceptInvite from "./pages/AcceptInvite";
 // routes descendant (`path="/*"`) qui coexiste avec `/` au lieu de le
 // remplacer — patron "Descendant <Routes>" de React Router v6 : les chemins
 // ci-dessous sont relatifs à ce préfixe, pas absolus.
+//
+// AppShell réutilise Navbar/Footer (Chap 24, round theming) — avant, cette
+// nav était codée en dur ici, Tailwind brut, sans marque, sans partager
+// landing.css : une personnalisation de la landing ne se voyait nulle part
+// ailleurs (Login/Learn/Admin). L'intérieur d'Admin (admin-theme.css) reste
+// délibérément neutre — .admin-shell pose son propre fond opaque par-dessus
+// .site-shell, seule la barre du haut change.
 function AppShell() {
-  const { t, i18n } = useTranslation();
-  const { user, logout } = useAuth();
-
-  const toggleLang = () =>
-    i18n.changeLanguage(i18n.language.startsWith("fr") ? "en" : "fr");
-
   return (
-    <div className="min-h-screen">
-      <nav className="flex items-center gap-4 border-b p-4">
-        <Link to="/learn" className="font-medium">
-          {t("nav.learn")}
-        </Link>
-        {user?.role === "admin" && (
-          <Link to="/admin" className="font-medium">
-            {t("admin.nav")}
-          </Link>
-        )}
-        <button onClick={toggleLang} className="text-sm uppercase">
-          {i18n.language.slice(0, 2)}
-        </button>
-        <span className="flex-1" />
-        {user ? (
-          <button onClick={logout}>{t("nav.logout")}</button>
-        ) : (
-          <Link to="/login">{t("nav.login")}</Link>
-        )}
-      </nav>
+    <div className="site-shell">
+      <Navbar />
       <main className="p-6">
         <Routes>
           <Route path="learn" element={<Learn />} />
@@ -80,6 +63,7 @@ function AppShell() {
           </Route>
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }

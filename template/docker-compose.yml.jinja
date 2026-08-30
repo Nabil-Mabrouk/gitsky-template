@@ -164,6 +164,44 @@ services:
       db:
         condition: service_healthy
     restart: "no"
+{%- if resolved_modules.module_worker %}
+
+  worker:
+    # Cycle métier long-vivant (allocation/trading/bulletin, etc. — projet,
+    # app/domain/worker_cycle.py). Même image que backend/migrate ; seule la
+    # commande change (Dockerfile documenté pour cet usage : "les flags du
+    # .env décident À L'EXÉCUTION").
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: {{ project_name }}_worker
+    command: python -m app.modules.worker.runner
+    restart: unless-stopped
+    # Un cycle métier peut prendre plusieurs dizaines de secondes (I/O externe :
+    # API d'exchange, appels LLM pour le bulletin). Le défaut Docker (10s) ne
+    # laisse pas le temps à runner.py de finir son cycle en cours après SIGTERM
+    # avant SIGKILL — 90s donne une marge raisonnable sans bloquer longtemps
+    # un redeploy (déclenché à CHAQUE push, pas seulement ceux qui touchent
+    # le worker : docker compose up -d --build reconstruit tous les services).
+    stop_grace_period: 90s
+    # Le Dockerfile sonde localhost:8000/health (process gunicorn) — worker ne
+    # sert aucun port HTTP, cette sonde échouerait toujours sans ce disable.
+    healthcheck:
+      disable: true
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENVIRONMENT=production
+    networks:
+      - internal-net
+    depends_on:
+      db:
+        condition: service_healthy
+{%- endif %}
 
 networks:
   proxy-net:

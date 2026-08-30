@@ -27,6 +27,7 @@ MODULE_FLAGS: tuple[str, ...] = (
     "module_monetization_shop",
     "module_monetization_subscription",
     "module_fleet",
+    "module_worker",
 )
 
 
@@ -112,6 +113,12 @@ class Settings(BaseSettings):
     module_monetization_subscription: bool = False
     # Module spécial : activé uniquement pour l'app fleet dashboard (mystudio.com).
     module_fleet: bool = False
+    module_worker: bool = False
+
+    # Intervalle entre deux cycles du service worker, en secondes
+    # (module_worker uniquement). Défaut 1h — une valeur de configuration
+    # arbitraire côté chassis, ajustable en .env sans rebuild.
+    worker_interval_seconds: int = 3600
 
     @property
     def enabled_modules(self) -> list[str]:

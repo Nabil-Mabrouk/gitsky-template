@@ -7,7 +7,7 @@
 #   <module> : clé courte du catalogue (admin, analytics, onboarding,
 #              tutorials, security_middleware, i18n, agentic,
 #              monetization_shop, monetization_subscription).
-#              PAS "fleet" — voir plus bas.
+#              PAS "fleet" ni "worker" — voir plus bas.
 #
 # Fait, dans l'ordre : (1) vérifie que le module existe et n'est pas déjà
 # dans l'état demandé, (2) bascule le flag dans .env, (3) bascule la MÊME
@@ -27,14 +27,18 @@ set -euo pipefail
 MODULE="${1:?Usage: toggle_module.sh <module> <on|off>}"
 STATE="${2:?Usage: toggle_module.sh <module> <on|off>}"
 
-# module_fleet a des effets réels sur docker-compose.yml (montages hôte
-# GITSKY_GENERATOR_PATH/GITSKY_MONOREPO_GITDIR/PROJECTS_DIR, Chap 27) qu'un
-# simple changement de .env ne peut pas ajouter — seul `copier update` avec
-# modules: {fleet: true} régénère le compose correctement.
-if [[ "$MODULE" == "fleet" ]]; then
-    echo "✗ module_fleet ne se bascule pas ainsi : docker-compose.yml a besoin" >&2
-    echo "  de montages hôte dédiés qu'un simple changement de .env ne peut pas" >&2
-    echo "  ajouter (Chap 27). Utilisez copier update avec modules: {fleet: true}." >&2
+# module_fleet et module_worker ont tous deux des effets STRUCTURELS sur
+# docker-compose.yml (montages hôte pour fleet, Chap 27 ; un service entier
+# `worker:` pour worker, Chap X) qu'un simple changement de .env ne peut pas
+# produire — seul `copier update` régénère le compose. Contrairement aux
+# autres modules, basculer juste .env laisserait le service worker absent
+# (activation) ou tournant pour rien, orphelin de tout flag (désactivation).
+if [[ "$MODULE" == "fleet" || "$MODULE" == "worker" ]]; then
+    echo "✗ module_${MODULE} ne se bascule pas ainsi : docker-compose.yml a besoin" >&2
+    echo "  d'un changement structurel qu'un simple .env ne peut pas produire." >&2
+    echo "  Utilisez copier update avec modules: {${MODULE}: true|false}, puis" >&2
+    echo "  'docker compose up -d --build' pour faire apparaître/disparaître le" >&2
+    echo "  service correspondant." >&2
     exit 1
 fi
 

@@ -40,6 +40,10 @@ accroc, quoi que vous ayez changé par ailleurs.
   conçu pour votre logique métier ; survit à `copier update` par
   construction (rien dans le template ne les régénère après le scaffold
   initial).
+- `app/domain/worker_cycle.py` (si `MODULE_WORKER` actif) — le cycle métier
+  périodique (allocation, décisions, génération, etc.) ; le châssis
+  (`app/modules/worker/`) fournit la boucle et l'arrêt propre, jamais la
+  logique. Voir `MODULES.md`.
 - Tout nouveau fichier que vous ajoutez.
 
 ## Châssis — partagé, mis à jour par `copier update`

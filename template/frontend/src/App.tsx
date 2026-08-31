@@ -7,6 +7,7 @@ import Activity from "./pages/admin/Activity";
 import CreateProject from "./pages/admin/CreateProject";
 import ProjectActions from "./pages/admin/ProjectActions";
 import Leads from "./pages/admin/Leads";
+import ProjectLeads from "./pages/admin/ProjectLeads";
 import Maintenance from "./pages/admin/Maintenance";
 import Analytics from "./pages/admin/Analytics";
 import Security from "./pages/admin/Security";
@@ -54,6 +55,7 @@ function AppShell() {
               <Route path="fleet/:name" element={<ProjectActions />} />
               <Route path="activity" element={<Activity />} />
               <Route path="leads" element={<Leads />} />
+              <Route path="project-leads" element={<ProjectLeads />} />
               <Route path="maintenance" element={<Maintenance />} />
               <Route path="users" element={<Users />} />
               <Route path="waitlist" element={<Waitlist />} />

@@ -27,6 +27,7 @@ MODULE_FLAGS: tuple[str, ...] = (
     "module_monetization_subscription",
     "module_fleet",
     "module_worker",
+    "module_leads",
 )
 
 # Workers Gunicorn par défaut (Chap 21) — une simple valeur de configuration

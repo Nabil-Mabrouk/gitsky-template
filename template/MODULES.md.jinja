@@ -203,3 +203,27 @@ plusieurs dizaines de secondes, plutôt que de compter uniquement sur les
 **Ne touchez pas** : `app/modules/worker/*` (mécanique châssis : recovery au
 boot, boucle, audit) — seul `app/domain/worker_cycle.py` vous appartient.
 {%- endif %}
+
+{%- if resolved_modules.module_leads %}
+
+## Leads (`MODULE_LEADS`)
+
+**Fournit** : vue projet-locale des emails captés par la landing publique
+(`EmailCapture.tsx` → `POST /leads` du landing collector partagé, Chap 18) —
+`GET /api/leads` (liste, réservé admin) et `POST /api/leads/convert`
+(transforme un lead en compte Waitlist invité, même mécanisme que
+`MODULE_ADMIN`). Aucune donnée n'est dupliquée localement : la liste vient
+d'un appel HTTP au landing collector (`app/modules/leads/client.py`) ; la
+seule écriture propre à ce projet est le compte `User` créé lors d'une
+conversion.
+
+**Sécurité** : l'accès au landing collector utilise `LEADS_COLLECTOR_TOKEN`
+(`.env.local`), un jeton DÉRIVÉ propre à ce projet — jamais le jeton maître
+du fleet dashboard, qui donnerait accès aux leads de toute la flotte. Voir
+`scripts/provision_leads_token.sh` s'il est absent de `.env.local`.
+
+**Étendre en sécurité** : aucun point d'extension exposé — campagnes email
+et octroi d'abonnement sont hors périmètre de ce module.
+
+**Ne touchez pas** : `app/modules/leads/*` — entièrement châssis.
+{%- endif %}

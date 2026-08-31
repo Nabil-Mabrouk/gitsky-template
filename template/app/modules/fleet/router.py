@@ -192,6 +192,16 @@ async def create_project(
     webhook_installed = False
     clone_url: str | None = None
 
+    if payload.modules.get("leads") and not generator_client.provision_leads_token(
+        project_dir, payload.name
+    ):
+        warnings.append(
+            "module_leads activé, mais COLLECTOR_STATS_TOKEN est absent de "
+            "l'environnement du fleet dashboard — LEADS_COLLECTOR_TOKEN n'a pas pu "
+            "être calculé automatiquement. Provisionnez-le manuellement sur le "
+            "projet généré via scripts/provision_leads_token.sh."
+        )
+
     if payload.github_mode == "create":
         try:
             repo = await github_client.create_repo(payload.name, private=payload.github_private)

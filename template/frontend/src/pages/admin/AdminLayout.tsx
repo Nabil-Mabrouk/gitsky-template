@@ -33,6 +33,9 @@ const TABS: Tab[] = [
   { key: "analytics", labelKey: "admin.tabs.analytics", path: "/admin/analytics", moduleFlag: "analytics" },
   { key: "security", labelKey: "admin.tabs.security", path: "/admin/security", moduleFlag: "security_middleware" },
   { key: "tutorials", labelKey: "admin.tabs.tutorials", path: "/learn", moduleFlag: "tutorials" },
+  // Distinct de l'onglet "leads" ci-dessus (fleet, cross-projets) : celui-ci
+  // ne montre QUE les leads DE ce projet, réservé à module_leads.
+  { key: "projectLeads", labelKey: "admin.tabs.projectLeads", path: "/admin/project-leads", moduleFlag: "leads" },
 ];
 
 export default function AdminLayout() {

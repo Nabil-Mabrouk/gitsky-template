@@ -28,6 +28,7 @@ MODULE_FLAGS: tuple[str, ...] = (
     "module_monetization_subscription",
     "module_fleet",
     "module_worker",
+    "module_leads",
 )
 
 
@@ -114,6 +115,7 @@ class Settings(BaseSettings):
     # Module spécial : activé uniquement pour l'app fleet dashboard (mystudio.com).
     module_fleet: bool = False
     module_worker: bool = False
+    module_leads: bool = False
 
     # Intervalle entre deux cycles du service worker, en secondes
     # (module_worker uniquement). Défaut 1h — une valeur de configuration

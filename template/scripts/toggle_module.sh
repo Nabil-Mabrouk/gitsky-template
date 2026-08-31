@@ -7,7 +7,7 @@
 #   <module> : clé courte du catalogue (admin, analytics, onboarding,
 #              tutorials, security_middleware, i18n, agentic,
 #              monetization_shop, monetization_subscription).
-#              PAS "fleet" ni "worker" — voir plus bas.
+#              PAS "fleet", "worker" ni "leads" — voir plus bas.
 #
 # Fait, dans l'ordre : (1) vérifie que le module existe et n'est pas déjà
 # dans l'état demandé, (2) bascule le flag dans .env, (3) bascule la MÊME
@@ -27,13 +27,14 @@ set -euo pipefail
 MODULE="${1:?Usage: toggle_module.sh <module> <on|off>}"
 STATE="${2:?Usage: toggle_module.sh <module> <on|off>}"
 
-# module_fleet et module_worker ont tous deux des effets STRUCTURELS sur
-# docker-compose.yml (montages hôte pour fleet, Chap 27 ; un service entier
-# `worker:` pour worker, Chap X) qu'un simple changement de .env ne peut pas
-# produire — seul `copier update` régénère le compose. Contrairement aux
-# autres modules, basculer juste .env laisserait le service worker absent
-# (activation) ou tournant pour rien, orphelin de tout flag (désactivation).
-if [[ "$MODULE" == "fleet" || "$MODULE" == "worker" ]]; then
+# module_fleet, module_worker et module_leads ont tous des effets STRUCTURELS
+# sur docker-compose.yml (montages hôte pour fleet, Chap 27 ; un service
+# entier `worker:` pour worker, Chap X ; rejoindre shared-services-net pour
+# leads, Chap X) qu'un simple changement de .env ne peut pas produire — seul
+# `copier update` régénère le compose. Contrairement aux autres modules,
+# basculer juste .env laisserait le service/réseau absent (activation) ou
+# actif pour rien, orphelin de tout flag (désactivation).
+if [[ "$MODULE" == "fleet" || "$MODULE" == "worker" || "$MODULE" == "leads" ]]; then
     echo "✗ module_${MODULE} ne se bascule pas ainsi : docker-compose.yml a besoin" >&2
     echo "  d'un changement structurel qu'un simple .env ne peut pas produire." >&2
     echo "  Utilisez copier update avec modules: {${MODULE}: true|false}, puis" >&2

@@ -17,6 +17,8 @@ faux projet sur disque » n'est pas une simulation utile, contrairement à
 oublié qu'on peut se permettre de contourner en développement.
 """
 
+import hashlib
+import hmac
 import os
 import re
 from pathlib import Path
@@ -101,3 +103,29 @@ def generate_project(name: str, config: dict, dest_root: Path) -> Path:
         unsafe=True,
     )
     return dest
+
+
+def provision_leads_token(project_dir: Path, project_name: str) -> bool:
+    """Calcule et écrit LEADS_COLLECTOR_TOKEN dans .env.local du projet
+    généré (module_leads) — SEULE valeur de .env.local dérivable
+    automatiquement à la génération (Chap 23 : toutes les autres — GitHub,
+    SMTP... — n'ont pas de valeur dérivable et restent du ressort de
+    l'opérateur). Formule dupliquée à l'identique dans
+    landing_collector.main._derived_token et
+    scripts/provision_leads_token.sh — verrouillée par
+    test_collector_stats_token.py.
+
+    Renvoie False (sans lever) si COLLECTOR_STATS_TOKEN est absent de
+    l'environnement du fleet dashboard lui-même : un projet généré sans ce
+    jeton reste fonctionnel pour tout le reste, seul module_leads restera
+    inopérant tant que l'opérateur n'aura pas exécuté
+    scripts/provision_leads_token.sh dessus (même best-effort que la
+    création GitHub dans create_project).
+    """
+    master = os.environ.get("COLLECTOR_STATS_TOKEN", "")
+    if not master:
+        return False
+    derived = hmac.new(master.encode(), project_name.encode(), hashlib.sha256).hexdigest()
+    with (project_dir / ".env.local").open("a", encoding="utf-8") as f:
+        f.write(f"LEADS_COLLECTOR_TOKEN={derived}\n")
+    return True

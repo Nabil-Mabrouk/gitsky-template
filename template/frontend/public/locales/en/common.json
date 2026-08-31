@@ -46,7 +46,8 @@
       "waitlist": "Waitlist",
       "analytics": "Analytics",
       "security": "Security",
-      "tutorials": "Tutorials"
+      "tutorials": "Tutorials",
+      "projectLeads": "My leads"
     },
     "leads": {
       "title": "Leads",
@@ -54,6 +55,21 @@
       "empty": "No leads for this project.",
       "noProjects": "No T0 project registered.",
       "error": "Could not load the leads.",
+      "columns": {
+        "email": "Email",
+        "source": "Source",
+        "date": "Date",
+        "verified": "Verified"
+      }
+    },
+    "projectLeads": {
+      "title": "Leads",
+      "loading": "Loading…",
+      "empty": "No leads for this project.",
+      "error": "Could not load the leads.",
+      "convert": "Convert to account",
+      "converted": "{{email}} has been invited.",
+      "convertError": "Conversion failed — try again.",
       "columns": {
         "email": "Email",
         "source": "Source",

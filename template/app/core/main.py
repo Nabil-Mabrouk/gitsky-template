@@ -144,6 +144,11 @@ if settings.module_worker:
 
     app.include_router(worker_router, prefix="/api/worker", tags=["worker"])
 
+if settings.module_leads:
+    from app.modules.leads import router as leads_router
+
+    app.include_router(leads_router, prefix="/api/leads", tags=["leads"])
+
 # --- Métier : le core inclut tout APIRouter exposé par app.domain.routers
 # (scaffolding data_models/domain_routes, ou code métier du projet). Chaque
 # routeur porte son propre prefix. Import optionnel : dans un projet généré,
@@ -188,5 +193,6 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict:
             "monetization_subscription": settings.module_monetization_subscription,
             "fleet": settings.module_fleet,
             "worker": settings.module_worker,
+            "leads": settings.module_leads,
         },
     }

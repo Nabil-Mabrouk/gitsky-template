@@ -85,11 +85,12 @@ services:
     networks:
       - proxy-net
       - internal-net
-{%- if resolved_modules.module_fleet or resolved_modules.module_leads %}
-      # Lecture directe du landing collector partagé : fleet (onglet Leads,
-      # toute la flotte) et module_leads (vue projet-locale) en ont besoin —
-      # un projet ordinaire sans l'un des deux n'a aucune raison de joindre
-      # ce réseau interne à la flotte.
+{%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics %}
+      # Lecture directe de services partagés : fleet (onglet Leads, toute la
+      # flotte), module_leads (vue projet-locale du landing collector) et
+      # module_analytics (service geoip partagé, Chap 13) en ont besoin — un
+      # projet ordinaire sans aucun des trois n'a aucune raison de joindre ce
+      # réseau interne à la flotte.
       - shared-services-net
 {%- endif %}
 {%- if resolved_modules.module_fleet %}
@@ -211,7 +212,7 @@ networks:
   internal-net:
     driver: bridge
     internal: true
-{%- if resolved_modules.module_fleet or resolved_modules.module_leads %}
+{%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics %}
   # Réseau interne de shared_services (Chap 18) — jamais créé ici, seulement
   # rejoint. Nom réel dépendant du nom de projet Compose de shared_services
   # sur le serveur : vérifier avec `docker network ls` au premier déploiement

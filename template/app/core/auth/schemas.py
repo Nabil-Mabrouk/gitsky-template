@@ -27,11 +27,16 @@ class UserRead(BaseModel):
     email: EmailStr
     role: UserRole
     is_active: bool
+    must_change_password: bool
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    # Porté aussi ici (pas seulement sur UserRead) pour que le frontend
+    # puisse rediriger dès la réponse de /login, sans attendre un aller-
+    # retour /me supplémentaire.
+    must_change_password: bool = False
 
 
 class AcceptInviteRequest(BaseModel):
@@ -40,3 +45,25 @@ class AcceptInviteRequest(BaseModel):
 
     token: str
     password: str = Field(min_length=8)
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Même politique de mot de passe que RegisterRequest — c'est aussi,
+    de facto, le titulaire qui choisit un mot de passe pour la première fois
+    de façon vérifiable (jeton envoyé à son email)."""
+
+    token: str
+    password: str = Field(min_length=8)
+
+
+class ChangePasswordRequest(BaseModel):
+    """Changement volontaire OU forcé (must_change_password) — les deux
+    passent par le même endpoint, `current_password` est toujours requis :
+    défense en profondeur même avec un access token dérobé."""
+
+    current_password: str
+    new_password: str = Field(min_length=8)

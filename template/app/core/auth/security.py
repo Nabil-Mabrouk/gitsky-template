@@ -84,6 +84,24 @@ def create_invite_token(
     return _create_token(subject, "invite", delta, claims)
 
 
+def create_reset_token(
+    subject: str | int,
+    expires_delta: timedelta | None = None,
+    **extra_claims: Any,
+) -> str:
+    """Jeton de réinitialisation de mot de passe (Chap 7bis) — voir
+    User.reset_token. Expiration courte (1h, contrairement aux 7j de
+    l'invitation) : un lien de reset peut être demandé par n'importe qui
+    connaissant l'email, sa fenêtre de validité doit rester étroite.
+
+    `jti` pour la même raison que `create_invite_token` : éviter un jeton
+    strictement identique si deux demandes tombent dans la même seconde.
+    """
+    delta = expires_delta or timedelta(hours=1)
+    claims: dict[str, Any] = {"jti": uuid.uuid4().hex, **extra_claims}
+    return _create_token(subject, "reset", delta, claims)
+
+
 def decode_token(token: str, expected_type: str | None = None) -> dict[str, Any]:
     """Décode et vérifie un JWT.
 

@@ -24,7 +24,8 @@
       "email": "Email address",
       "password": "Password",
       "submit": "Sign in",
-      "error": "Invalid credentials"
+      "error": "Invalid credentials",
+      "forgot": "Forgot your password?"
     },
     "invite": {
       "title": "Set your password",
@@ -33,6 +34,30 @@
       "confirm": "Confirm password",
       "submit": "Activate my account",
       "error": "Invalid invitation"
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email address: if an account exists, a reset link will be sent to you.",
+      "email": "Email address",
+      "submit": "Send reset link",
+      "sent": "If that address matches an account, an email has been sent."
+    },
+    "resetPassword": {
+      "title": "Reset your password",
+      "password": "New password",
+      "confirm": "Confirm password",
+      "submit": "Reset password",
+      "error": "Invalid or expired link"
+    },
+    "changePassword": {
+      "title": "Change your password",
+      "forcedNotice": "Your password was set by an administrator: choose a new one to continue.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm password",
+      "submit": "Change password",
+      "error": "Current password incorrect",
+      "mismatch": "Passwords do not match"
     }
   },
   "admin": {

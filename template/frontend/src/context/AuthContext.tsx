@@ -11,6 +11,7 @@ interface User {
   id: number;
   email: string;
   role: string;
+  must_change_password: boolean;
 }
 
 interface AuthState {

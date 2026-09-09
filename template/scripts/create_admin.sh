@@ -90,8 +90,19 @@ esac
 # serveur reçoit `:'email'` tel quel et le rejette avec une erreur de
 # syntaxe SQL, pas un message psql). D'où `-i` (stdin) sur `docker exec`
 # et le SQL passé par un here-string plutôt que `-c`.
+#
+# `must_change_password = true` UNIQUEMENT pour un compte nouvellement créé
+# (Chap 7bis) : le mot de passe vient de l'opérateur, pas du titulaire — il
+# doit le changer à sa première connexion. Un compte déjà existant simplement
+# promu ('exists') garde son mot de passe et son flag inchangés : il l'a
+# déjà choisi lui-même par un autre chemin (register/accept-invite).
+if [[ "$RESULT" == "created" ]]; then
+    SQL="UPDATE users SET role = 'admin', must_change_password = true WHERE email = :'email';"
+else
+    SQL="UPDATE users SET role = 'admin' WHERE email = :'email';"
+fi
 docker exec -i "${PROJECT_NAME}_db" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-    -v email="$EMAIL" <<< "UPDATE users SET role = 'admin' WHERE email = :'email';"
+    -v email="$EMAIL" <<< "$SQL"
 
 echo "✓ ${EMAIL} est maintenant admin sur ${PROJECT_NAME}."
 if [[ $GENERATED -eq 1 && "$RESULT" == "created" ]]; then

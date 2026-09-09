@@ -40,4 +40,16 @@ class User(Base):
     # unique (remis à None après acceptation) sans logique de révocation
     # séparée — le jeton lui-même reste un JWT signé/expirant classique.
     invite_token = Column(String, nullable=True)
+    # Vrai pour un compte dont le mot de passe initial a été choisi par un
+    # tiers plutôt que par le titulaire (ex. create_admin.sh, Chap 7bis) —
+    # jamais mis à vrai par /register ou /accept-invite, qui laissent déjà
+    # l'utilisateur choisir son propre mot de passe. Le frontend redirige
+    # vers /change-password tant que ce flag est vrai.
+    must_change_password = Column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    # Jeton de réinitialisation de mot de passe (Chap 7bis) — même mécanique
+    # qu'invite_token : stocké tel quel, comparé à égalité stricte, remis à
+    # NULL après usage (usage unique), un renvoi écrase l'ancien.
+    reset_token = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

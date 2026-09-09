@@ -11,17 +11,22 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import mailer
 from app.core.auth.dependencies import get_current_user
 from app.core.auth.schemas import (
     AcceptInviteRequest,
+    ChangePasswordRequest,
     Credentials,
+    ForgotPasswordRequest,
     RegisterRequest,
+    ResetPasswordRequest,
     Token,
     UserRead,
 )
 from app.core.auth.security import (
     create_access_token,
     create_refresh_token,
+    create_reset_token,
     decode_token,
     hash_password,
     verify_password,
@@ -130,7 +135,10 @@ async def login(
     _set_refresh_cookie(
         response, create_refresh_token(user.id, tv=user.token_version)
     )
-    return Token(access_token=create_access_token(user.id, role=user.role.value))
+    return Token(
+        access_token=create_access_token(user.id, role=user.role.value),
+        must_change_password=user.must_change_password,
+    )
 
 
 @router.post("/refresh", response_model=Token)
@@ -195,3 +203,103 @@ async def logout_all(
 @router.get("/me", response_model=UserRead)
 async def me(current_user: User = Depends(get_current_user)) -> User:
     return current_user
+
+
+@router.post("/forgot-password", status_code=status.HTTP_202_ACCEPTED)
+async def forgot_password(
+    payload: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)
+) -> None:
+    """Demande de réinitialisation (Chap 7bis) — toujours 202, que l'email
+    existe ou non : ne jamais révéler à un tiers si une adresse a un compte.
+    """
+    user = (
+        await db.execute(select(User).where(User.email == payload.email))
+    ).scalar_one_or_none()
+    if user is None or not user.is_active:
+        return
+
+    # Écrase un jeton précédent : une demande répétée invalide implicitement
+    # la précédente (même comparaison à égalité stricte que invite_token).
+    token = create_reset_token(user.id)
+    user.reset_token = token
+    await db.commit()
+
+    link = f"{settings.frontend_url}/reset-password/{token}"
+    mailer.send_email(
+        to=user.email,
+        subject=f"Réinitialisation de mot de passe — {settings.project_name}",
+        body=(
+            f"Une réinitialisation de mot de passe a été demandée pour ce "
+            f"compte.\n\n{link}\n\nCe lien expire dans 1 heure. Si vous n'êtes "
+            f"pas à l'origine de cette demande, ignorez cet email."
+        ),
+    )
+
+
+@router.post("/reset-password", response_model=Token)
+async def reset_password(
+    payload: ResetPasswordRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> Token:
+    """Message d'erreur générique dans tous les cas (jeton invalide / expiré
+    / déjà utilisé) — même raisonnement que accept_invite : ne pas révéler
+    à un tiers ayant intercepté un vieux lien lequel des trois s'applique.
+    """
+    try:
+        decoded = decode_token(payload.token, expected_type="reset")
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Lien invalide ou expiré"
+        )
+
+    user = await db.get(User, int(decoded["sub"]))
+    if user is None or payload.token != user.reset_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Lien invalide ou expiré"
+        )
+
+    user.hashed_password = hash_password(payload.password)
+    user.reset_token = None
+    user.must_change_password = False
+    # Un reset doit invalider toute session déjà ouverte (y compris celle
+    # d'un attaquant qui aurait le mot de passe compromis d'origine) — même
+    # levier que logout-all (Chap 7 §Révocation).
+    user.token_version += 1
+    await db.commit()
+
+    _set_refresh_cookie(
+        response, create_refresh_token(user.id, tv=user.token_version)
+    )
+    return Token(access_token=create_access_token(user.id, role=user.role.value))
+
+
+@router.patch("/change-password", response_model=Token)
+async def change_password(
+    payload: ChangePasswordRequest,
+    response: Response,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Token:
+    """Sert à la fois le changement volontaire et le changement forcé
+    (must_change_password, Chap 7bis) — `current_password` toujours requis,
+    même avec un access token déjà valide (défense en profondeur)."""
+    if not verify_password(payload.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Mot de passe actuel incorrect",
+        )
+
+    current_user.hashed_password = hash_password(payload.new_password)
+    current_user.must_change_password = False
+    # Même raisonnement que reset_password : un ancien mot de passe compromis
+    # ne doit plus ouvrir aucune session après le changement.
+    current_user.token_version += 1
+    await db.commit()
+
+    _set_refresh_cookie(
+        response, create_refresh_token(current_user.id, tv=current_user.token_version)
+    )
+    return Token(
+        access_token=create_access_token(current_user.id, role=current_user.role.value)
+    )

@@ -265,7 +265,10 @@ async def create_project(
             push_url = f"https://{token}@github.com/{github_repo}.git"
         try:
             git_client.push_initial_commit(
-                project_dir, push_url, settings.fleet_github_deploy_branch
+                project_dir,
+                push_url,
+                settings.fleet_github_deploy_branch,
+                clean_url=clone_url,
             )
             pushed = True
         except Exception:

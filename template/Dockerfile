@@ -18,7 +18,8 @@ FROM python:3.12-slim AS builder
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --user -r requirements.txt
 
 # ── Stage 2 : production ─────────────────────────────────────────────────────
 FROM python:3.12-slim AS production

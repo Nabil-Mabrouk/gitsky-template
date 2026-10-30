@@ -64,6 +64,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# En-têtes de sécurité HTTP sur TOUTE réponse API (round sécurité ai-qube,
+# 2026-10-30) — protège api.{{ domaine }}, pas la page HTML servie par le
+# frontend (clickjacking réel côté frontend : couvert à l'infra, Traefik/
+# serve.json, pas ici). Core, pas de flag MODULE_* — au même niveau que CORS.
+from app.core.security_headers import SecurityHeadersMiddleware  # noqa: E402
+
+app.add_middleware(SecurityHeadersMiddleware)
+
 # --- Core : SEO et authentification (Chap 2 §1). Présents dans tout projet,
 # pas de flag MODULE_* — au même titre que le shell FastAPI lui-même.
 # SEO monté à la racine : /sitemap.xml et /robots.txt doivent vivre à l'origine.

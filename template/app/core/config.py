@@ -11,6 +11,7 @@ projet (Chap 2 §1) — ils font partie du core, ce ne sont donc pas des flags
 
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Liste canonique des modules optionnels (Chap 3 §config.py). `module_auth`
@@ -121,6 +122,23 @@ class Settings(BaseSettings):
     # (module_worker uniquement). Défaut 1h — une valeur de configuration
     # arbitraire côté chassis, ajustable en .env sans rebuild.
     worker_interval_seconds: int = 3600
+
+    @model_validator(mode="after")
+    def _forbid_default_secret_key_in_production(self) -> "Settings":
+        """Fail-closed (même esprit que _forbid_stub_in_production du module
+        monetization) : le defaut dev est public (visible dans ce repo), donc
+        un demarrage en production qui le garde permettrait de forger un JWT
+        valide. Echoue a la construction de Settings() (premier import de
+        app.core.main), avant meme que l'app FastAPI existe."""
+        if (
+            self.environment == "production"
+            and self.secret_key == "dev-insecure-change-me-in-production-0123456789"
+        ):
+            raise RuntimeError(
+                "secret_key reste la valeur par defaut alors que "
+                "ENVIRONMENT=production — refus du demarrage (fail-closed)"
+            )
+        return self
 
     @property
     def enabled_modules(self) -> list[str]:

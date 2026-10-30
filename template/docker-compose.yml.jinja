@@ -82,6 +82,19 @@ services:
       - "traefik.http.routers.authlimit-{{ project_name }}.priority=100"
       - "traefik.http.routers.authlimit-{{ project_name }}.middlewares=authlimit-{{ project_name }}"
       - "traefik.http.routers.authlimit-{{ project_name }}.service=backend-{{ project_name }}"
+      # Même raisonnement que authlimit ci-dessus (round sécurité ai-qube,
+      # 2026-10-30) : forgot-password et reset-password n'étaient pas
+      # limitées alors qu'elles coûtent aussi un hachage/l'envoi d'un email —
+      # énumération de comptes et abus d'envoi sans cette limite.
+      - "traefik.http.middlewares.pwresetlimit-{{ project_name }}.ratelimit.average=5"
+      - "traefik.http.middlewares.pwresetlimit-{{ project_name }}.ratelimit.period=1m"
+      - "traefik.http.middlewares.pwresetlimit-{{ project_name }}.ratelimit.burst=10"
+      - "traefik.http.routers.pwresetlimit-{{ project_name }}.rule=Host(`api.{{ project_domain }}`) && (Path(`/api/auth/forgot-password`) || Path(`/api/auth/reset-password`))"
+      - "traefik.http.routers.pwresetlimit-{{ project_name }}.entrypoints=websecure"
+      - "traefik.http.routers.pwresetlimit-{{ project_name }}.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.pwresetlimit-{{ project_name }}.priority=100"
+      - "traefik.http.routers.pwresetlimit-{{ project_name }}.middlewares=pwresetlimit-{{ project_name }}"
+      - "traefik.http.routers.pwresetlimit-{{ project_name }}.service=backend-{{ project_name }}"
     networks:
       - proxy-net
       - internal-net

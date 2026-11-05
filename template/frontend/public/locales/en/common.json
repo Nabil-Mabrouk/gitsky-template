@@ -15,7 +15,10 @@
     },
     "lesson": {
       "unauthorized": "Sign in to view this lesson.",
-      "forbidden": "Your account doesn't have access to this lesson."
+      "forbidden": "Your account doesn't have access to this lesson.",
+      "previous": "← Previous",
+      "next": "Next →",
+      "progress": "Lesson {{current}} of {{total}}"
     }
   },
   "auth": {

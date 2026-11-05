@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../api";
+import "../learn.css";
 
 interface Tutorial {
   id: number;
@@ -24,22 +25,20 @@ export default function Learn() {
   }, [i18n.language]);
 
   return (
-    <section>
-      <h1 className="text-2xl font-bold">{t("learn.title")}</h1>
-      <ul className="mt-4 grid gap-2">
+    <section className="learn-catalogue">
+      <h1>{t("learn.title")}</h1>
+      <ul>
         {tutorials.map((tut) => (
-          <li key={tut.id} className="rounded border p-3">
-            <Link to={`/learn/${tut.slug}`} className="font-medium">
+          <li key={tut.id}>
+            <Link to={`/learn/${tut.slug}`}>
               {tut.title}
+              {tut.access_role !== "anonymous" && (
+                <span className="badge-premium">{t("learn.premium")}</span>
+              )}
             </Link>
-            {tut.access_role !== "anonymous" && (
-              <span className="ml-2 rounded bg-black/10 px-2 py-0.5 text-xs">
-                {t("learn.premium")}
-              </span>
-            )}
           </li>
         ))}
-        {tutorials.length === 0 && <li className="text-sm opacity-60">{t("learn.empty")}</li>}
+        {tutorials.length === 0 && <li className="empty">{t("learn.empty")}</li>}
       </ul>
     </section>
   );

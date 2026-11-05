@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../api";
+import "../learn.css";
 
 interface LessonSummary {
   id: number;
@@ -18,8 +19,11 @@ interface TutorialDetailData {
   lessons: LessonSummary[];
 }
 
-// Liste des leçons d'un tutoriel (Chap 11) — GET /api/content/tutorials/{slug}
-// est public, le contrôle d'accès réel se fait par leçon (LessonView).
+// /learn/:slug n'affiche plus elle-même la liste des leçons (Chap 11, round
+// navigation) : ce sommaire vit maintenant dans TutorialSidebar, visible en
+// permanence pendant la lecture. Cette route se contente de rediriger vers
+// la première leçon — GET /api/content/tutorials/{slug} reste public, le
+// contrôle d'accès réel se fait par leçon (LessonView).
 export default function TutorialDetail() {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
@@ -35,26 +39,31 @@ export default function TutorialDetail() {
     });
   }, [slug]);
 
-  if (notFound) return <p className="text-sm text-red-600">{t("learn.detail.notFound")}</p>;
-  if (!tutorial) return <p>{t("learn.detail.loading")}</p>;
+  if (notFound)
+    return (
+      <section className="learn-catalogue">
+        <p className="empty">{t("learn.detail.notFound")}</p>
+      </section>
+    );
+  if (!tutorial)
+    return (
+      <section className="learn-catalogue">
+        <p className="empty">{t("learn.detail.loading")}</p>
+      </section>
+    );
+
+  const first = [...tutorial.lessons].sort((a, b) => a.order - b.order)[0];
+  if (first) {
+    return <Navigate to={`/learn/${tutorial.slug}/lessons/${first.id}`} replace />;
+  }
 
   return (
-    <section>
-      <Link to="/learn" className="text-sm opacity-70">
+    <section className="learn-catalogue">
+      <Link to="/learn" className="tutorial-sidebar-back">
         {t("learn.detail.back")}
       </Link>
-      <h1 className="mt-2 text-2xl font-bold">{tutorial.title}</h1>
-      <ol className="mt-4 grid gap-2">
-        {[...tutorial.lessons]
-          .sort((a, b) => a.order - b.order)
-          .map((lesson) => (
-            <li key={lesson.id} className="rounded border p-3">
-              <Link to={`/learn/${tutorial.slug}/lessons/${lesson.id}`} className="font-medium">
-                {lesson.title}
-              </Link>
-            </li>
-          ))}
-      </ol>
+      <h1>{tutorial.title}</h1>
+      <p className="empty">{t("learn.empty")}</p>
     </section>
   );
 }

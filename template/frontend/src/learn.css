@@ -1,0 +1,98 @@
+/* Catalogue + leçons (module tutorials, Chap 11) — round navigation
+   (2026-11-05) : avant ce fichier, ces pages étaient en Tailwind brut, sans
+   lien avec le thème du reste du site (--color-primary/--font-family-display
+   définis par theme.css.jinja, déjà chargé globalement par index.css —
+   mêmes tokens --text/--bg/--border que landing.css, voir ce fichier). */
+
+.learn-catalogue {
+  max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem;
+}
+.learn-catalogue h1 { font-family: var(--font-family-display); font-size: 2rem; margin: 0 0 1.5rem; }
+.learn-catalogue ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.learn-catalogue li {
+  border: 1px solid var(--border); border-radius: 0.75rem;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.learn-catalogue li:not(.empty):hover { border-color: var(--color-primary); transform: translateY(-1px); }
+.learn-catalogue a {
+  display: block; padding: 1.1rem 1.25rem; font-weight: 600;
+  color: var(--text); text-decoration: none;
+}
+.learn-catalogue .badge-premium {
+  margin-left: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--bg));
+  border-radius: 999px; padding: 0.15rem 0.6rem;
+}
+.learn-catalogue li.empty, .empty { border: none; opacity: 0.6; font-size: 0.95rem; padding: 0.5rem 0; }
+
+/* Sommaire + leçon : deux colonnes dès que l'écran le permet, sommaire en
+   pleine largeur au-dessus du contenu sur mobile (pas de place pour deux
+   colonnes sous 760px). */
+.tutorial-shell {
+  display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 2.5rem;
+  max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem; align-items: start;
+}
+@media (max-width: 760px) {
+  .tutorial-shell { grid-template-columns: 1fr; }
+}
+
+.tutorial-sidebar { position: sticky; top: 5rem; }
+.tutorial-sidebar-back {
+  display: inline-block; font-size: 0.85rem; opacity: 0.7;
+  text-decoration: none; color: var(--text); margin-bottom: 1rem;
+}
+.tutorial-sidebar-back:hover { opacity: 1; }
+.tutorial-sidebar-title { font-family: var(--font-family-display); font-size: 1.1rem; margin: 0 0 1rem; }
+.tutorial-sidebar ol {
+  list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;
+  gap: 0.15rem; border-left: 2px solid var(--border);
+}
+.tutorial-sidebar a {
+  display: flex; gap: 0.6rem; align-items: baseline;
+  padding: 0.5rem 0.9rem; margin-left: -2px; border-left: 2px solid transparent;
+  color: var(--text); text-decoration: none; font-size: 0.9rem; opacity: 0.75;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+.tutorial-sidebar a:hover { opacity: 1; }
+.tutorial-sidebar a.active {
+  opacity: 1; font-weight: 600; border-left-color: var(--color-primary); color: var(--color-primary);
+}
+.tutorial-sidebar-index { font-size: 0.75rem; opacity: 0.6; min-width: 1.2em; }
+
+.tutorial-content { min-width: 0; }
+.tutorial-progress {
+  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em;
+  opacity: 0.6; margin: 0 0 0.5rem;
+}
+.tutorial-content h1 { font-family: var(--font-family-display); font-size: 2rem; margin: 0 0 1.5rem; }
+
+/* Largeur de lecture confortable (~70 caractères) — le Markdown rendu ne
+   doit jamais s'étirer sur toute la largeur de la colonne de contenu. */
+.markdown-body { max-width: 70ch; line-height: 1.7; }
+.markdown-body h2 { font-family: var(--font-family-display); font-size: 1.4rem; margin: 2rem 0 0.75rem; }
+.markdown-body h3 { font-size: 1.1rem; font-weight: 700; margin: 1.5rem 0 0.5rem; }
+.markdown-body p { margin: 0 0 1rem; }
+.markdown-body ul, .markdown-body ol { margin: 0 0 1rem; padding-left: 1.5rem; }
+.markdown-body li { margin-bottom: 0.4rem; }
+.markdown-body code {
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--bg));
+  border-radius: 0.3rem; padding: 0.1rem 0.35rem; font-size: 0.9em;
+}
+.markdown-body table { width: 100%; border-collapse: collapse; margin: 0 0 1.5rem; font-size: 0.92rem; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+.markdown-body th { background: color-mix(in srgb, var(--color-primary) 6%, var(--bg)); font-family: var(--font-family-display); }
+
+.lesson-pager {
+  display: flex; justify-content: space-between; gap: 1rem;
+  margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+}
+.lesson-pager a {
+  flex: 1; max-width: 50%; text-decoration: none; color: var(--text); font-size: 0.9rem;
+  padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.6rem;
+  transition: border-color 0.15s ease;
+}
+.lesson-pager a:hover { border-color: var(--color-primary); }
+.lesson-pager a.next { text-align: right; margin-left: auto; }
+.lesson-pager-label {
+  display: block; font-size: 0.7rem; text-transform: uppercase; opacity: 0.55; margin-bottom: 0.2rem;
+}

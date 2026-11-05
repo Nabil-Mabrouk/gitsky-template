@@ -19,32 +19,34 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid max-w-sm gap-3">
-      <h1 className="text-2xl font-bold">{t("auth.login.title")}</h1>
-      <input
-        className="rounded border p-2"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={t("auth.login.email")}
-      />
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder={t("auth.login.password")}
-      />
-      {error && <p className="text-sm text-red-600">{t("auth.login.error")}</p>}
-      <button
-        className="rounded p-2 font-medium text-white"
-        style={{ background: "var(--color-primary)" }}
-      >
-        {t("auth.login.submit")}
-      </button>
-      <Link to="/forgot-password" className="text-sm underline">
-        {t("auth.login.forgot")}
-      </Link>
-    </form>
+    <div className="flex min-h-[70vh] items-center justify-center p-6">
+      <form onSubmit={onSubmit} className="grid w-full max-w-sm gap-3">
+        <h1 className="text-2xl font-bold">{t("auth.login.title")}</h1>
+        <input
+          className="rounded border p-2"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t("auth.login.email")}
+        />
+        <input
+          className="rounded border p-2"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("auth.login.password")}
+        />
+        {error && <p className="text-sm text-red-600">{t("auth.login.error")}</p>}
+        <button
+          className="rounded p-2 font-medium text-white"
+          style={{ background: "var(--color-primary)" }}
+        >
+          {t("auth.login.submit")}
+        </button>
+        <Link to="/forgot-password" className="text-sm underline">
+          {t("auth.login.forgot")}
+        </Link>
+      </form>
+    </div>
   );
 }

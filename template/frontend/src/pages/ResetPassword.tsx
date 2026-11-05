@@ -41,29 +41,31 @@ export default function ResetPassword() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid max-w-sm gap-3">
-      <h1 className="text-2xl font-bold">{t("auth.resetPassword.title")}</h1>
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder={t("auth.resetPassword.password")}
-      />
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-        placeholder={t("auth.resetPassword.confirm")}
-      />
-      {error && <p className="text-sm text-red-600">{t("auth.resetPassword.error")}</p>}
-      <button
-        className="rounded p-2 font-medium text-white"
-        style={{ background: "var(--color-primary)" }}
-      >
-        {t("auth.resetPassword.submit")}
-      </button>
-    </form>
+    <div className="flex min-h-[70vh] items-center justify-center p-6">
+      <form onSubmit={onSubmit} className="grid w-full max-w-sm gap-3">
+        <h1 className="text-2xl font-bold">{t("auth.resetPassword.title")}</h1>
+        <input
+          className="rounded border p-2"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("auth.resetPassword.password")}
+        />
+        <input
+          className="rounded border p-2"
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder={t("auth.resetPassword.confirm")}
+        />
+        {error && <p className="text-sm text-red-600">{t("auth.resetPassword.error")}</p>}
+        <button
+          className="rounded p-2 font-medium text-white"
+          style={{ background: "var(--color-primary)" }}
+        >
+          {t("auth.resetPassword.submit")}
+        </button>
+      </form>
+    </div>
   );
 }

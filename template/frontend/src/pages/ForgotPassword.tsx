@@ -21,27 +21,29 @@ export default function ForgotPassword() {
     setSent(true);
   }
 
-  if (sent) {
-    return <p className="max-w-sm text-sm">{t("auth.forgotPassword.sent")}</p>;
-  }
-
   return (
-    <form onSubmit={onSubmit} className="grid max-w-sm gap-3">
-      <h1 className="text-2xl font-bold">{t("auth.forgotPassword.title")}</h1>
-      <p className="text-sm text-black/60">{t("auth.forgotPassword.subtitle")}</p>
-      <input
-        className="rounded border p-2"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={t("auth.forgotPassword.email")}
-      />
-      <button
-        className="rounded p-2 font-medium text-white"
-        style={{ background: "var(--color-primary)" }}
-      >
-        {t("auth.forgotPassword.submit")}
-      </button>
-    </form>
+    <div className="flex min-h-[70vh] items-center justify-center p-6">
+      {sent ? (
+        <p className="w-full max-w-sm text-sm">{t("auth.forgotPassword.sent")}</p>
+      ) : (
+        <form onSubmit={onSubmit} className="grid w-full max-w-sm gap-3">
+          <h1 className="text-2xl font-bold">{t("auth.forgotPassword.title")}</h1>
+          <p className="text-sm text-black/60">{t("auth.forgotPassword.subtitle")}</p>
+          <input
+            className="rounded border p-2"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t("auth.forgotPassword.email")}
+          />
+          <button
+            className="rounded p-2 font-medium text-white"
+            style={{ background: "var(--color-primary)" }}
+          >
+            {t("auth.forgotPassword.submit")}
+          </button>
+        </form>
+      )}
+    </div>
   );
 }

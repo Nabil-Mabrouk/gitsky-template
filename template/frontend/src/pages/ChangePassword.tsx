@@ -42,39 +42,41 @@ export default function ChangePassword() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid max-w-sm gap-3">
-      <h1 className="text-2xl font-bold">{t("auth.changePassword.title")}</h1>
-      {user?.must_change_password && (
-        <p className="text-sm text-black/60">{t("auth.changePassword.forcedNotice")}</p>
-      )}
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={current}
-        onChange={(e) => setCurrent(e.target.value)}
-        placeholder={t("auth.changePassword.current")}
-      />
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder={t("auth.changePassword.new")}
-      />
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-        placeholder={t("auth.changePassword.confirm")}
-      />
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <button
-        className="rounded p-2 font-medium text-white"
-        style={{ background: "var(--color-primary)" }}
-      >
-        {t("auth.changePassword.submit")}
-      </button>
-    </form>
+    <div className="flex min-h-[70vh] items-center justify-center p-6">
+      <form onSubmit={onSubmit} className="grid w-full max-w-sm gap-3">
+        <h1 className="text-2xl font-bold">{t("auth.changePassword.title")}</h1>
+        {user?.must_change_password && (
+          <p className="text-sm text-black/60">{t("auth.changePassword.forcedNotice")}</p>
+        )}
+        <input
+          className="rounded border p-2"
+          type="password"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value)}
+          placeholder={t("auth.changePassword.current")}
+        />
+        <input
+          className="rounded border p-2"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("auth.changePassword.new")}
+        />
+        <input
+          className="rounded border p-2"
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder={t("auth.changePassword.confirm")}
+        />
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <button
+          className="rounded p-2 font-medium text-white"
+          style={{ background: "var(--color-primary)" }}
+        >
+          {t("auth.changePassword.submit")}
+        </button>
+      </form>
+    </div>
   );
 }

@@ -74,24 +74,29 @@
 .landing .btn:hover { transform: translateY(-1px); opacity: 0.9; }
 .landing .badge { display: inline-block; font-size: 0.85rem; font-weight: 600; color: var(--color-primary); margin: 0 0 1rem; }
 
-.landing .site-nav {
+/* Navbar/Footer sont des composants PARTAGÉS (App.tsx::AppShell) : rendus
+   aussi bien dans .landing que dans .site-shell (Login, Learn, Admin...).
+   Bug réel trouvé en peuplant les tutoriels de fleet-dashboard (2026-11-05) :
+   ces règles ne ciblaient QUE .landing — toute autre page affichait une nav
+   sans mise en page du tout (liens collés, pas de sticky/flex/fond). */
+.landing .site-nav, .site-shell .site-nav {
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
   padding: 1rem 1.5rem; background: var(--nav-bg);
   backdrop-filter: blur(6px); border-bottom: 1px solid var(--border);
 }
-.landing .site-nav .brand { font-weight: 700; color: var(--text); text-decoration: none; font-family: var(--font-family-display); }
-.landing .site-nav .btn { padding: 0.5rem 1rem; font-size: 0.9rem; border: none; font: inherit; }
-.landing .site-nav-links { display: flex; align-items: center; gap: 1.25rem; }
-.landing .site-nav-links a:not(.btn) { color: var(--text); text-decoration: none; font-size: 0.95rem; }
-.landing .site-nav-links a:not(.btn):hover { opacity: 0.75; }
+.landing .site-nav .brand, .site-shell .site-nav .brand { font-weight: 700; color: var(--text); text-decoration: none; font-family: var(--font-family-display); }
+.landing .site-nav .btn, .site-shell .site-nav .btn { padding: 0.5rem 1rem; font-size: 0.9rem; border: none; font: inherit; }
+.landing .site-nav-links, .site-shell .site-nav-links { display: flex; align-items: center; gap: 1.25rem; }
+.landing .site-nav-links a:not(.btn), .site-shell .site-nav-links a:not(.btn) { color: var(--text); text-decoration: none; font-size: 0.95rem; }
+.landing .site-nav-links a:not(.btn):hover, .site-shell .site-nav-links a:not(.btn):hover { opacity: 0.75; }
 
-.landing .site-footer {
+.landing .site-footer, .site-shell .site-footer {
   padding: 1.5rem; text-align: center; max-width: none;
   border-top: 1px solid var(--border); color: var(--text); opacity: 0.7;
   font-size: 0.875rem;
 }
-.landing .site-footer p { margin: 0; }
+.landing .site-footer p, .site-shell .site-footer p { margin: 0; }
 
 /* Apparition douce au scroll — CSS pur (scroll-driven animations), AUCUN
    JS : @supports dégrade proprement (contenu simplement visible, jamais

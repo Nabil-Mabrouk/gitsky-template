@@ -28,7 +28,8 @@
       "password": "Mot de passe",
       "submit": "Se connecter",
       "error": "Identifiants invalides",
-      "forgot": "Mot de passe oublié ?"
+      "forgot": "Mot de passe oublié ?",
+      "unavailable": "Service momentanément inaccessible. Réessayez."
     },
     "invite": {
       "title": "Définir votre mot de passe",
@@ -36,21 +37,24 @@
       "password": "Mot de passe",
       "confirm": "Confirmer le mot de passe",
       "submit": "Activer mon compte",
-      "error": "Invitation invalide"
+      "error": "Invitation invalide",
+      "unavailable": "Service momentanément inaccessible. Réessayez."
     },
     "forgotPassword": {
       "title": "Mot de passe oublié",
       "subtitle": "Indiquez votre adresse email : si un compte existe, un lien de réinitialisation vous sera envoyé.",
       "email": "Adresse email",
       "submit": "Envoyer le lien",
-      "sent": "Si cette adresse correspond à un compte, un email a été envoyé."
+      "sent": "Si cette adresse correspond à un compte, un email a été envoyé.",
+      "unavailable": "Service momentanément inaccessible. Réessayez."
     },
     "resetPassword": {
       "title": "Réinitialiser votre mot de passe",
       "password": "Nouveau mot de passe",
       "confirm": "Confirmer le mot de passe",
       "submit": "Réinitialiser",
-      "error": "Lien invalide ou expiré"
+      "error": "Lien invalide ou expiré",
+      "unavailable": "Service momentanément inaccessible. Réessayez."
     },
     "changePassword": {
       "title": "Changer votre mot de passe",
@@ -60,7 +64,8 @@
       "confirm": "Confirmer le mot de passe",
       "submit": "Changer le mot de passe",
       "error": "Mot de passe actuel incorrect",
-      "mismatch": "Les mots de passe ne correspondent pas"
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "unavailable": "Service momentanément inaccessible. Réessayez."
     }
   },
   "admin": {

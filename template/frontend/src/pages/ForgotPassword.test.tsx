@@ -58,4 +58,27 @@ describe("ForgotPassword", () => {
       expect(screen.getByText("auth.forgotPassword.sent")).toBeInTheDocument(),
     );
   });
+
+  it("affiche un message distinct si le service est inaccessible (erreur réseau)", async () => {
+    // Bug réel trouvé par l'agent dev de f-ynd (2026-11-07) : setSent(true)
+    // était appelé sans conditionner sur la réussite de la requête, une
+    // promesse rejetée (coupure réseau) restait non gérée.
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError("network error"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <MemoryRouter>
+        <ForgotPassword />
+      </MemoryRouter>,
+    );
+
+    await userEvent.type(
+      screen.getByPlaceholderText("auth.forgotPassword.email"),
+      "alice@example.com",
+    );
+    await userEvent.click(screen.getByText("auth.forgotPassword.submit"));
+
+    expect(await screen.findByText("auth.forgotPassword.unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("auth.forgotPassword.sent")).not.toBeInTheDocument();
+  });
 });

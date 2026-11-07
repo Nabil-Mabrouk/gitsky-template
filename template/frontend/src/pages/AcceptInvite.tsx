@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
@@ -8,6 +8,10 @@ const API = import.meta.env.VITE_API_URL ?? "";
 // Page publique (hors AdminRoute) reçue par lien email — POST /api/auth/
 // accept-invite définit le mot de passe et connecte directement, même motif
 // que AuthContext.login() (voir refreshUser()).
+//
+// Garde anti-double-submit + distinction service inaccessible (fetch qui
+// rejette) / erreur applicative — même trou que les autres pages d'auth,
+// trouvé par l'agent dev de f-ynd (2026-11-07) sur ses 3 voisines.
 export default function AcceptInvite() {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
@@ -16,28 +20,42 @@ export default function AcceptInvite() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const [pending, setPending] = useState(false);
+  const submitting = useRef(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setError(false);
+    if (submitting.current) return;
     if (password !== confirm || password.length < 8) {
       setError(true);
       return;
     }
-    const res = await fetch(`${API}/api/auth/accept-invite`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ token, password }),
-    });
-    if (!res.ok) {
-      setError(true);
-      return;
+    submitting.current = true;
+    setPending(true);
+    setError(false);
+    setUnavailable(false);
+    try {
+      const res = await fetch(`${API}/api/auth/accept-invite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token, password }),
+      });
+      if (!res.ok) {
+        setError(true);
+        return;
+      }
+      const data = (await res.json()) as { access_token: string };
+      localStorage.setItem("access_token", data.access_token);
+      await refreshUser();
+      navigate("/learn");
+    } catch {
+      setUnavailable(true);
+    } finally {
+      submitting.current = false;
+      setPending(false);
     }
-    const data = (await res.json()) as { access_token: string };
-    localStorage.setItem("access_token", data.access_token);
-    await refreshUser();
-    navigate("/learn");
   }
 
   return (
@@ -60,7 +78,9 @@ export default function AcceptInvite() {
           placeholder={t("auth.invite.confirm")}
         />
         {error && <p className="text-sm text-red-600">{t("auth.invite.error")}</p>}
+        {unavailable && <p className="text-sm text-red-600">{t("auth.invite.unavailable")}</p>}
         <button
+          disabled={pending}
           className="rounded p-2 font-medium text-white"
           style={{ background: "var(--color-primary)" }}
         >

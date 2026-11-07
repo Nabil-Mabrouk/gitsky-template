@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../api";
@@ -10,6 +10,11 @@ import { useAuth } from "../context/AuthContext";
 // cas. PATCH /api/auth/change-password révoque les sessions précédentes et
 // renvoie un nouvel access token — il faut le stocker ici comme après un
 // login normal, sinon les appels suivants échouent avec l'ancien jeton.
+//
+// Garde anti-double-submit + distinction service inaccessible (fetch qui
+// rejette) / erreur applicative — trou réel trouvé par l'agent dev de f-ynd
+// (2026-11-07) : res.ok était bien vérifié, mais rien n'entourait l'appel
+// réseau lui-même, une erreur réseau pure restait non gérée.
 export default function ChangePassword() {
   const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
@@ -18,27 +23,41 @@ export default function ChangePassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  const [pending, setPending] = useState(false);
+  const submitting = useRef(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setError(null);
+    if (submitting.current) return;
     if (password !== confirm || password.length < 8) {
       setError(t("auth.changePassword.mismatch"));
       return;
     }
-    const res = await apiFetch("/api/auth/change-password", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ current_password: current, new_password: password }),
-    });
-    if (!res.ok) {
-      setError(t("auth.changePassword.error"));
-      return;
+    submitting.current = true;
+    setPending(true);
+    setError(null);
+    setUnavailable(false);
+    try {
+      const res = await apiFetch("/api/auth/change-password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_password: current, new_password: password }),
+      });
+      if (!res.ok) {
+        setError(t("auth.changePassword.error"));
+        return;
+      }
+      const data = (await res.json()) as { access_token: string };
+      localStorage.setItem("access_token", data.access_token);
+      await refreshUser();
+      navigate("/learn");
+    } catch {
+      setUnavailable(true);
+    } finally {
+      submitting.current = false;
+      setPending(false);
     }
-    const data = (await res.json()) as { access_token: string };
-    localStorage.setItem("access_token", data.access_token);
-    await refreshUser();
-    navigate("/learn");
   }
 
   return (
@@ -70,7 +89,9 @@ export default function ChangePassword() {
           placeholder={t("auth.changePassword.confirm")}
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
+        {unavailable && <p className="text-sm text-red-600">{t("auth.changePassword.unavailable")}</p>}
         <button
+          disabled={pending}
           className="rounded p-2 font-medium text-white"
           style={{ background: "var(--color-primary)" }}
         >

@@ -85,4 +85,17 @@ describe("AcceptInvite", () => {
 
     expect(await screen.findByText("auth.invite.error")).toBeInTheDocument();
   });
+
+  it("affiche un message distinct si le service est inaccessible (erreur réseau)", async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError("network error"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderAtToken();
+
+    await userEvent.type(screen.getByPlaceholderText("auth.invite.password"), "longenough1");
+    await userEvent.type(screen.getByPlaceholderText("auth.invite.confirm"), "longenough1");
+    await userEvent.click(screen.getByText("auth.invite.submit"));
+
+    expect(await screen.findByText("auth.invite.unavailable")).toBeInTheDocument();
+  });
 });

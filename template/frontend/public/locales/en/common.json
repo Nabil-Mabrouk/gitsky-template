@@ -28,7 +28,8 @@
       "password": "Password",
       "submit": "Sign in",
       "error": "Invalid credentials",
-      "forgot": "Forgot your password?"
+      "forgot": "Forgot your password?",
+      "unavailable": "Service temporarily unavailable. Please try again."
     },
     "invite": {
       "title": "Set your password",
@@ -36,21 +37,24 @@
       "password": "Password",
       "confirm": "Confirm password",
       "submit": "Activate my account",
-      "error": "Invalid invitation"
+      "error": "Invalid invitation",
+      "unavailable": "Service temporarily unavailable. Please try again."
     },
     "forgotPassword": {
       "title": "Forgot password",
       "subtitle": "Enter your email address: if an account exists, a reset link will be sent to you.",
       "email": "Email address",
       "submit": "Send reset link",
-      "sent": "If that address matches an account, an email has been sent."
+      "sent": "If that address matches an account, an email has been sent.",
+      "unavailable": "Service temporarily unavailable. Please try again."
     },
     "resetPassword": {
       "title": "Reset your password",
       "password": "New password",
       "confirm": "Confirm password",
       "submit": "Reset password",
-      "error": "Invalid or expired link"
+      "error": "Invalid or expired link",
+      "unavailable": "Service temporarily unavailable. Please try again."
     },
     "changePassword": {
       "title": "Change your password",
@@ -60,7 +64,8 @@
       "confirm": "Confirm password",
       "submit": "Change password",
       "error": "Current password incorrect",
-      "mismatch": "Passwords do not match"
+      "mismatch": "Passwords do not match",
+      "unavailable": "Service temporarily unavailable. Please try again."
     }
   },
   "admin": {

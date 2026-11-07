@@ -85,4 +85,40 @@ describe("ResetPassword", () => {
 
     expect(await screen.findByText("auth.resetPassword.error")).toBeInTheDocument();
   });
+
+  it("affiche un message distinct si le service est inaccessible (erreur réseau)", async () => {
+    // Bug réel trouvé par l'agent dev de f-ynd (2026-11-07) : rien n'entourait
+    // l'appel fetch, une promesse rejetée (coupure réseau) restait non gérée.
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError("network error"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderAtToken();
+
+    await userEvent.type(screen.getByPlaceholderText("auth.resetPassword.password"), "longenough1");
+    await userEvent.type(screen.getByPlaceholderText("auth.resetPassword.confirm"), "longenough1");
+    await userEvent.click(screen.getByText("auth.resetPassword.submit"));
+
+    expect(await screen.findByText("auth.resetPassword.unavailable")).toBeInTheDocument();
+  });
+
+  it("empêche un double submit pendant que la requête est en vol", async () => {
+    let resolveFetch!: (value: Response) => void;
+    const fetchMock = vi.fn().mockReturnValueOnce(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderAtToken();
+
+    await userEvent.type(screen.getByPlaceholderText("auth.resetPassword.password"), "longenough1");
+    await userEvent.type(screen.getByPlaceholderText("auth.resetPassword.confirm"), "longenough1");
+    const submit = screen.getByText("auth.resetPassword.submit");
+    await userEvent.click(submit);
+    await userEvent.click(submit);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    resolveFetch(jsonResponse({ access_token: "xyz" }));
+  });
 });

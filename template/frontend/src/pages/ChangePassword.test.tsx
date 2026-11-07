@@ -113,4 +113,21 @@ describe("ChangePassword", () => {
 
     expect(await screen.findByText("auth.changePassword.error")).toBeInTheDocument();
   });
+
+  it("affiche un message distinct si le service est inaccessible (erreur réseau)", async () => {
+    apiFetch.mockRejectedValueOnce(new TypeError("network error"));
+
+    render(
+      <MemoryRouter>
+        <ChangePassword />
+      </MemoryRouter>,
+    );
+
+    await userEvent.type(screen.getByPlaceholderText("auth.changePassword.current"), "old-pass1");
+    await userEvent.type(screen.getByPlaceholderText("auth.changePassword.new"), "new-pass12");
+    await userEvent.type(screen.getByPlaceholderText("auth.changePassword.confirm"), "new-pass12");
+    await userEvent.click(screen.getByText("auth.changePassword.submit"));
+
+    expect(await screen.findByText("auth.changePassword.unavailable")).toBeInTheDocument();
+  });
 });

@@ -1,10 +1,14 @@
 """Routeur du module tutorials (Chap 11).
 
-Catalogue public + détail + contenu de leçon avec contrôle d'accès par rôle.
-Le core inclut ce routeur sous /api/content lorsque MODULE_TUTORIALS=true.
+Catalogue + détail + contenu de leçon, tous avec contrôle d'accès par rôle
+(round visibilité, 2026-11-07) : un tutoriel non-anonyme n'apparaît même
+plus dans le catalogue pour qui n'a pas le rôle requis — avant cette
+modification, seule la LEÇON était protégée ; le titre du tutoriel restait
+visible à tout le monde (juste annoté "Premium"). Le core inclut ce routeur
+sous /api/content lorsque MODULE_TUTORIALS=true.
 
-Sécurité : le filtrage frontend ne suffit pas — le contenu d'une leçon d'un
-tutoriel non public est protégé côté API (Chap 11).
+Sécurité : le filtrage frontend ne suffit pas — la visibilité ET le contenu
+sont tranchés ici, jamais côté client (Chap 11).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -25,14 +29,22 @@ from app.modules.tutorials.schemas import (
 router = APIRouter()
 
 
+def _can_view(tutorial: Tutorial, user: User | None) -> bool:
+    if tutorial.access_role == UserRole.anonymous:
+        return True
+    return user is not None and role_rank(user.role) >= role_rank(tutorial.access_role)
+
+
 @router.get("/tutorials", response_model=list[TutorialSummary])
 async def list_tutorials(
-    lang: str = "fr", db: AsyncSession = Depends(get_db)
+    lang: str = "fr",
+    user: User | None = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
 ) -> list[Tutorial]:
     result = await db.execute(
         select(Tutorial).where(Tutorial.lang == lang).order_by(Tutorial.id)
     )
-    return list(result.scalars().all())
+    return [t for t in result.scalars().all() if _can_view(t, user)]
 
 
 @router.get("/tutorials/{slug}", response_model=TutorialDetail)

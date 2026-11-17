@@ -1,7 +1,7 @@
 """Runner de migrations multi-chaînes (équivalent Python de migrate.sh, Chap 4).
 
 Applique **toujours** la chaîne core, puis la chaîne de chaque module activé
-(flag `MODULE_*`). Chaque chaîne possède sa propre table de version, donc les
+(flag `MODULE_*`), puis **toujours** la chaîne métier `domain` (app/domain/). Chaque chaîne possède sa propre table de version, donc les
 chaînes s'empilent dans la base unique du projet sans se marcher dessus.
 
 Choix Python (vs le migrate.sh du livre) : portable (dev Windows) et testable
@@ -96,6 +96,14 @@ def run_migrations(url: str | None = None, settings: Settings | None = None) -> 
             "head",
         )
         applied.append("monetization")
+
+    # Chaîne métier (app/domain/) : toujours, et en dernier — ses tables peuvent
+    # référencer users et celles des modules. Table de version réglable
+    # (DOMAIN_VERSION_TABLE) pour les projets qui l'avaient nommée autrement.
+    command.upgrade(
+        _config("domain", "alembic/domain", settings.domain_version_table, url), "head"
+    )
+    applied.append("domain")
 
     return applied
 

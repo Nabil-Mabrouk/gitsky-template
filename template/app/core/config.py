@@ -123,6 +123,11 @@ class Settings(BaseSettings):
     # arbitraire côté chassis, ajustable en .env sans rebuild.
     worker_interval_seconds: int = 3600
 
+    # Table de version de la chaîne Alembic `domain` (app/domain/). Réglable
+    # pour les projets qui avaient ajouté cette chaîne à la main sous un autre
+    # nom avant le châssis (ex. f-ynd : alembic_version_fynd).
+    domain_version_table: str = "alembic_version_domain"
+
     @model_validator(mode="after")
     def _forbid_default_secret_key_in_production(self) -> "Settings":
         """Fail-closed (même esprit que _forbid_stub_in_production du module

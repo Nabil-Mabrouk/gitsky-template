@@ -40,6 +40,12 @@ accroc, quoi que vous ayez changé par ailleurs.
   conçu pour votre logique métier ; survit à `copier update` par
   construction (rien dans le template ne les régénère après le scaffold
   initial).
+- `alembic/domain/versions/` — les migrations de vos modèles métier.
+  `create_all` ne tourne qu'en développement : sans migration, une table
+  métier n'existe **jamais** en production. Après chaque modification de
+  `app/domain/models.py` : `alembic -n domain revision --autogenerate -m "..."`,
+  relisez le script, puis poussez (le service `migrate` l'applique, en
+  dernier, après core et modules).
 - `app/domain/worker_cycle.py` (si `MODULE_WORKER` actif) — le cycle métier
   périodique (allocation, décisions, génération, etc.) ; le châssis
   (`app/modules/worker/`) fournit la boucle et l'arrêt propre, jamais la

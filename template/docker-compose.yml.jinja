@@ -211,8 +211,12 @@ services:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - SECRET_KEY=${SECRET_KEY}
       - ENVIRONMENT=production
+    # internal-net (internal: true) pour la db ; egress-net pour l'I/O
+    # externe — sans lui, aucun accès Internet (bug réel trouvé sur 0-hl).
+    # Jamais proxy-net : partagé avec toute la flotte via Traefik.
     networks:
       - internal-net
+      - egress-net
     depends_on:
       db:
         condition: service_healthy
@@ -225,6 +229,12 @@ networks:
   internal-net:
     driver: bridge
     internal: true
+{%- if resolved_modules.module_worker %}
+  # Sortie Internet du worker uniquement — bridge propre au projet (préfixé
+  # par le nom de projet Compose), jamais partagé, aucun port publié.
+  egress-net:
+    driver: bridge
+{%- endif %}
 {%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics %}
   # Réseau interne de shared_services (Chap 18) — jamais créé ici, seulement
   # rejoint. Nom réel dépendant du nom de projet Compose de shared_services

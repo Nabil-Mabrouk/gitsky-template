@@ -5,11 +5,12 @@ en sécurité et ce qu'il ne faut jamais modifier directement. Régénéré à
 chaque `copier update` selon les modules réellement actifs — pas un
 document figé à tenir à jour à la main.
 
-**Règle générale** : `app/domain/models.py` et `app/domain/routers.py` sont
-le seul emplacement conçu pour votre code métier — ils survivent à
-`copier update` par construction (rien dans le template ne les régénère
-après le scaffold initial). Tout ce qui vit dans `app/modules/` ou
-`frontend/src/` (hors `frontend/src/landing-manifest.json`) est **châssis** :
+**Règle générale** : `app/domain/models.py` et `app/domain/routers.py` (backend)
+et `frontend/src/domain/routes.tsx` (pages) sont le seul emplacement conçu
+pour votre code métier — ils survivent à `copier update` par construction
+(rien dans le template ne les régénère après le scaffold initial). Tout ce
+qui vit dans `app/modules/` ou `frontend/src/` (hors
+`frontend/src/landing-manifest.json` et `frontend/src/domain/`) est **châssis** :
 partagé, réécrit/fusionné à chaque mise à jour du template. Éditer un
 fichier châssis directement, c'est accepter de résoudre un conflit de
 fusion à chaque `copier update` futur — parfois le bon choix, mais un choix
@@ -31,7 +32,8 @@ Aucun module optionnel n'est actif sur ce projet — authentification et SEO
 **Étendre en sécurité** : aucun point d'extension dans ce module. Pour un
 écran ou un endpoint admin métier, ajoutez votre propre routeur dans
 `app/domain/routers.py` (monté automatiquement, Chap 9) et votre propre page
-React, plutôt que d'éditer `app/modules/admin/`.
+React, déclarée dans `frontend/src/domain/routes.tsx`, plutôt que d'éditer
+`app/modules/admin/`.
 
 **Ne touchez pas** : `app/modules/admin/*` — entièrement châssis.
 {%- endif %}

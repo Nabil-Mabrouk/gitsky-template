@@ -49,6 +49,9 @@ _exclude:
 # la landing rend via l'app React partagée, quels que soient les modules actifs.
 _skip_if_exists:
   - "frontend/src/landing-manifest.json"
+  # Pages métier du projet (équivalent frontend de app/domain/routers.py) :
+  # App.tsx reste châssis et se contente de l'importer.
+  - "frontend/src/domain/routes.tsx"
 
 # Le TemplateExtensionLoader permet de référencer une extension par chemin
 # relatif au template (extensions/context.py) plutôt qu'un module installé.

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { domainRoutes } from "./domain/routes";
 import Landing from "./pages/Landing";
 import Learn from "./pages/Learn";
 import Login from "./pages/Login";
@@ -71,6 +72,8 @@ function AppShell() {
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password/:token" element={<ResetPassword />} />
             <Route path="change-password" element={<ChangePassword />} />
+            {/* Pages métier du projet (domain/routes.tsx, project-owned). */}
+            {domainRoutes}
             <Route element={<AdminRoute />}>
               <Route path="admin" element={<AdminLayout />}>
                 <Route index element={<Navigate to="fleet" replace />} />

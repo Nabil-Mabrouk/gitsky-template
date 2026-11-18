@@ -27,6 +27,12 @@ accroc, quoi que vous ayez changé par ailleurs.
   `frontend/src/components/layout/Footer.tsx` — générés avec des valeurs
   par défaut minimales (Chap 24), à votre charge de les personnaliser
   (design, liens, marque).
+- `frontend/src/domain/routes.tsx` (et vos pages sous `frontend/src/domain/`)
+  — les routes de vos pages métier, équivalent frontend de
+  `app/domain/routers.py`. Jamais réécrit par `copier update`. N'ajoutez
+  **jamais** de route dans `frontend/src/App.tsx`, qui est châssis : déclarez
+  vos `<Route>` (chemins relatifs) dans le fragment `domainRoutes`, rendu
+  dans le shell du site (Navbar/Footer, redirection « mot de passe à changer »).
 - `frontend/src/pages/Landing.tsx` — l'assemblage de la page d'accueil
   (toujours affichée à `/`, quels que soient les modules actifs).
 - `frontend/src/landing.css` — le style de la landing **et** de `AppShell`

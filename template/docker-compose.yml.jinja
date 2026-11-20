@@ -61,6 +61,9 @@ services:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - SECRET_KEY=${SECRET_KEY}
       - ENVIRONMENT=production
+      # Commit déployé, fourni par deploy-on-push.sh ; `unknown` si le
+      # conteneur est recréé autrement (rotate_*.sh, compose up manuel).
+      - GIT_SHA=${GIT_SHA:-unknown}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-{{ project_name }}.rule=Host(`api.{{ project_domain }}`)"
@@ -211,6 +214,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - SECRET_KEY=${SECRET_KEY}
       - ENVIRONMENT=production
+      - GIT_SHA=${GIT_SHA:-unknown}
     # internal-net (internal: true) pour la db ; egress-net pour l'I/O
     # externe — sans lui, aucun accès Internet (bug réel trouvé sur 0-hl).
     # Jamais proxy-net : partagé avec toute la flotte via Traefik.

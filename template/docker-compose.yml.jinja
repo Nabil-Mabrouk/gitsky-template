@@ -101,12 +101,14 @@ services:
     networks:
       - proxy-net
       - internal-net
-{%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics %}
+{%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics or resolved_modules.module_agentic %}
       # Lecture directe de services partagés : fleet (onglet Leads, toute la
       # flotte), module_leads (vue projet-locale du landing collector) et
-      # module_analytics (service geoip partagé, Chap 13) en ont besoin — un
-      # projet ordinaire sans aucun des trois n'a aucune raison de joindre ce
-      # réseau interne à la flotte.
+      # module_analytics (service geoip partagé, Chap 13) et module_agentic
+      # (llm-proxy partagé, Chap 18 — oubli corrigé le 2026-11-21) en ont
+      # besoin — un projet ordinaire sans aucun d'eux n'a aucune raison de
+      # joindre ce réseau interne à la flotte. Backend SEUL : le worker n'y
+      # est jamais branché (tout appel LLM passe par le backend).
       - shared-services-net
 {%- endif %}
 {%- if resolved_modules.module_fleet %}
@@ -239,7 +241,7 @@ networks:
   egress-net:
     driver: bridge
 {%- endif %}
-{%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics %}
+{%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics or resolved_modules.module_agentic %}
   # Réseau interne de shared_services (Chap 18) — jamais créé ici, seulement
   # rejoint. Nom réel dépendant du nom de projet Compose de shared_services
   # sur le serveur : vérifier avec `docker network ls` au premier déploiement

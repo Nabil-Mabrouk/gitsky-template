@@ -97,6 +97,29 @@ Si vous avez touché `app/domain/` : ajoutez et lancez vos propres tests
 c'est la vôtre à construire. Si vous avez touché `Dockerfile` ou
 `requirements.txt` : `docker compose build` en local avant de pousser.
 
+## Appels LLM — proxy partagé de la flotte
+
+Aucune clé de fournisseur (Anthropic, OpenAI, Groq…) dans ce projet : tout
+appel LLM passe par le `llm-proxy` partagé (LiteLLM, compatible OpenAI).
+
+- **Variables** (`.env.local`, posées par l'opérateur, jamais commitées) :
+  `LLM_PROXY_URL=http://llm-proxy:4000` et `LLM_PROXY_TOKEN` — un jeton
+  **propre à ce projet**, avec un budget et une liste de modèles autorisés,
+  émis par `shared_services/scripts/llm-proxy-keys.sh create-key`.
+- **Réseau** : seul le conteneur `backend` joint le proxy (via
+  `shared-services-net`). Le `worker` n'y a pas accès ; si un appel LLM doit
+  partir du worker, c'est une demande au châssis, pas un contournement.
+- **Client** : appelez le proxy directement depuis `app/domain/` avec le SDK
+  `openai` ou `httpx` (`base_url=LLM_PROXY_URL`, `api_key=LLM_PROXY_TOKEN`).
+  `app/modules/agentic/llm_client.py` ne renvoie que du texte : ne l'utilisez
+  pas pour les `tools`/`tool_calls`.
+- **Modèles** : `GET /v1/models` avec le jeton du projet liste exactement les
+  modèles autorisés — c'est la source de vérité, n'en codez aucun en dur
+  sans l'y avoir vu.
+- **Coût et budget** : `GET /key/info` (même jeton) donne la dépense et le
+  budget restant ; budget épuisé = erreur HTTP 400 `budget_exceeded`, à
+  traiter comme un arrêt propre, pas comme une panne à réessayer.
+
 ## Contrat de déploiement
 
 Un push sur la branche de déploiement redéclenche l'auto-deploy (webhook

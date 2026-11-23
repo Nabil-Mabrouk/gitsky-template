@@ -223,6 +223,10 @@ services:
     networks:
       - internal-net
       - egress-net
+      # Accès au llm-proxy partagé (Chap 1/18, demande 0-hl 2026-11-23) :
+      # réseau de shared_services où SEUL llm-proxy est branché — jamais
+      # shared-services-net, qui exposerait le Postgres de la flotte.
+      - llm-net
     depends_on:
       db:
         condition: service_healthy
@@ -240,6 +244,11 @@ networks:
   # par le nom de projet Compose), jamais partagé, aucun port publié.
   egress-net:
     driver: bridge
+  # Créé par shared_services (nom explicite, jamais préfixé) : doit exister
+  # avant le premier `docker compose up` du projet en prod.
+  llm-net:
+    external: true
+    name: ${LLM_NETWORK:-gitsky-llm-net}
 {%- endif %}
 {%- if resolved_modules.module_fleet or resolved_modules.module_leads or resolved_modules.module_analytics or resolved_modules.module_agentic %}
   # Réseau interne de shared_services (Chap 18) — jamais créé ici, seulement

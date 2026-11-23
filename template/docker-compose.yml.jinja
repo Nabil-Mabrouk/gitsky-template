@@ -107,8 +107,8 @@ services:
       # module_analytics (service geoip partagé, Chap 13) et module_agentic
       # (llm-proxy partagé, Chap 18 — oubli corrigé le 2026-11-21) en ont
       # besoin — un projet ordinaire sans aucun d'eux n'a aucune raison de
-      # joindre ce réseau interne à la flotte. Backend SEUL : le worker n'y
-      # est jamais branché (tout appel LLM passe par le backend).
+      # joindre ce réseau interne à la flotte. Backend SEUL : le worker joint
+      # le proxy par llm-net, jamais par ce réseau (Chap 1).
       - shared-services-net
 {%- endif %}
 {%- if resolved_modules.module_fleet %}

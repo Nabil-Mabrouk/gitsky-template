@@ -24,6 +24,12 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
+// Landing mockée : son contenu (titre, blocs) est personnalisable par chaque
+// projet — le test vérifie le routage vers elle, pas son texte (bug réel :
+// ce test échouait sur f-ynd, dont la landing et la barre de navigation sont
+// entièrement redessinées, comme le permet AGENTS.md).
+vi.mock("./pages/Landing", () => ({ default: () => <p>landing du projet</p> }));
+
 const auth = vi.hoisted(() => ({ user: null as null | { must_change_password: boolean } }));
 vi.mock("./context/AuthContext", () => ({
   useAuth: () => ({ user: auth.user, loading: false, logout: vi.fn() }),
@@ -57,9 +63,10 @@ describe("App — routes métier (domain/routes.tsx)", () => {
     stubHealth();
     const { container } = renderAppAt("/bots");
     expect(await screen.findByText("page bots")).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText("zero-hl")).toBeInTheDocument());
-    expect(container.querySelector(".site-nav")).not.toBeNull();
-    expect(container.querySelector(".site-footer")).not.toBeNull();
+    // Structure du shell, pas le texte de Navbar/Footer (fichiers « À vous »,
+    // redessinables par chaque projet).
+    expect(container.querySelector("nav, header")).not.toBeNull();
+    expect(container.querySelector("footer")).not.toBeNull();
   });
 
   it("rend plusieurs routes déclarées dans un fragment", async () => {
@@ -81,6 +88,8 @@ describe("App — routes métier (domain/routes.tsx)", () => {
     auth.user = null;
     stubHealth();
     renderAppAt("/");
-    expect(await screen.findByText("Bienvenue")).toBeInTheDocument();
+    expect(await screen.findByText("landing du projet")).toBeInTheDocument();
+    expect(screen.queryByText("page bots")).toBeNull();
+    expect(screen.queryByText("page terminal")).toBeNull();
   });
 });

@@ -176,6 +176,11 @@ services:
     command: python -m scripts.migrate
     env_file:
       - .env
+      # Réglages opérateur des migrations (ex. DOMAIN_VERSION_TABLE, Chap 4) :
+      # même source que backend/worker. Bug réel (f-ynd, 2026-11-23) : sans
+      # cette ligne, une valeur posée dans .env.local était ignorée ici.
+      - path: .env.local
+        required: false
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     networks:

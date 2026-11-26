@@ -98,6 +98,22 @@ services:
       - "traefik.http.routers.pwresetlimit-{{ project_name }}.priority=100"
       - "traefik.http.routers.pwresetlimit-{{ project_name }}.middlewares=pwresetlimit-{{ project_name }}"
       - "traefik.http.routers.pwresetlimit-{{ project_name }}.service=backend-{{ project_name }}"
+      # Inscriptions (audit f-ynd, 2026-11-26) : /api/auth/register et
+      # /api/auth/accept-invite coûtent un hachage argon2 et créent une ligne
+      # en base — sans limite, création de comptes en masse et DoS CPU. La
+      # règle couvre AUSSI toute inscription métier nommée /api/<nom>/register
+      # (convention AGENTS.md, ex. /api/fynd/register) : un seul segment entre
+      # /api/ et /register, donc jamais /api/fleet/projects/register (M2M,
+      # gardé par jeton). `$$` = `$` littéral (échappement Compose).
+      - "traefik.http.middlewares.signuplimit-{{ project_name }}.ratelimit.average=5"
+      - "traefik.http.middlewares.signuplimit-{{ project_name }}.ratelimit.period=1m"
+      - "traefik.http.middlewares.signuplimit-{{ project_name }}.ratelimit.burst=10"
+      - "traefik.http.routers.signuplimit-{{ project_name }}.rule=Host(`api.{{ project_domain }}`) && (Path(`/api/auth/register`) || Path(`/api/auth/accept-invite`) || PathRegexp(`^/api/[^/]+/register$$`))"
+      - "traefik.http.routers.signuplimit-{{ project_name }}.entrypoints=websecure"
+      - "traefik.http.routers.signuplimit-{{ project_name }}.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.signuplimit-{{ project_name }}.priority=100"
+      - "traefik.http.routers.signuplimit-{{ project_name }}.middlewares=signuplimit-{{ project_name }}"
+      - "traefik.http.routers.signuplimit-{{ project_name }}.service=backend-{{ project_name }}"
     networks:
       - proxy-net
       - internal-net

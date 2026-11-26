@@ -45,7 +45,10 @@ accroc, quoi que vous ayez changé par ailleurs.
 - `app/domain/models.py` et `app/domain/routers.py` — le seul emplacement
   conçu pour votre logique métier ; survit à `copier update` par
   construction (rien dans le template ne les régénère après le scaffold
-  initial).
+  initial). **Une inscription métier se nomme toujours
+  `POST /api/<nom>/register`** (un seul segment, ex. `/api/fynd/register`) :
+  c'est ce chemin que Traefik limite à 5 req/min par IP en production. Sous
+  un autre nom, la création de comptes ne serait limitée par rien.
 - `alembic/domain/versions/` — les migrations de vos modèles métier.
   `create_all` ne tourne qu'en développement : sans migration, une table
   métier n'existe **jamais** en production. Après chaque modification de

@@ -58,6 +58,12 @@ class Settings(BaseSettings):
     # URLs du sitemap et à la ligne Sitemap: de robots.txt. En dev on retombe
     # sur frontend_url ; la prod fournit le vrai domaine via l'environnement.
     site_url: str = "http://localhost:5173"
+    # Mesure d'audience Umami (Chap 13 §« Mesure d'Audience », service partagé
+    # Chap 18 §8). Opérateur, dans .env.local : URL du script de suivi
+    # (https://stats.<domaine fleet>/s.js) et identifiant du site créé dans
+    # Umami. Vides = aucun script chargé. Exposés au frontend par /health.
+    umami_script_url: str = ""
+    umami_website_id: str = ""
     # Langues indexées, la première étant la langue par défaut (sans préfixe
     # d'URL). Le sitemap n'émet des alternates hreflang que si module_i18n est
     # actif ET qu'au moins deux langues sont déclarées (Chap 10 §i18n).

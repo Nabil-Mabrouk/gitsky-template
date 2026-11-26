@@ -7,7 +7,9 @@ Reproduit le pattern de chargement conditionnel du Chap 3 / Chap 5 :
   et ne coûte donc aucune RAM.
 """
 
+import re
 from contextlib import asynccontextmanager
+from urllib.parse import urlparse
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -184,7 +186,7 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict:
     except Exception:
         raise HTTPException(status_code=503, detail="Database unavailable")
 
-    return {
+    body = {
         "status": "ok",
         "database": "ok",
         "project": settings.project_name,
@@ -204,3 +206,29 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict:
             "leads": settings.module_leads,
         },
     }
+    umami = _umami_config()
+    if umami is not None:
+        body["umami"] = umami
+    return body
+
+
+_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+
+
+def _umami_config() -> dict | None:
+    """Config publique du script de suivi Umami (Chap 13 §« Mesure d'Audience »).
+
+    Posée dans .env.local (UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID), lue à
+    l'exécution par le frontend — sans rebuild. Ces valeurs finissent dans une
+    balise <script> du navigateur : toute valeur incomplète ou douteuse (pas
+    HTTPS, identifiant qui n'est pas un UUID) est ignorée plutôt que servie.
+    `domains` borne la mesure au vrai domaine du projet (site_url) : rien
+    n'est envoyé depuis le dev local ni depuis une copie du site.
+    """
+    script_url = settings.umami_script_url.strip()
+    website_id = settings.umami_website_id.strip().lower()
+    parsed = urlparse(script_url)
+    if parsed.scheme != "https" or not parsed.netloc or not _UUID.match(website_id):
+        return None
+    domain = urlparse(settings.site_url).hostname or ""
+    return {"script_url": script_url, "website_id": website_id, "domains": domain}

@@ -11,8 +11,7 @@ fournisseur transactionnel plus tard sans changement de code (même logique
 que LLM_PROXY_URL abstrayant le fournisseur LLM).
 
 Appel synchrone/bloquant depuis un handler async, accepté sciemment : un
-clic admin occasionnel, pas un chemin chaud (même raisonnement que
-analytics/middleware.py pour ne pas déporter son écriture DB non plus).
+clic admin occasionnel, pas un chemin chaud.
 """
 
 import os

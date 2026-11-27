@@ -4,7 +4,8 @@ Générique : ne connaît rien du contenu réel qu'on lui donne (livre GitSky ou
 autre) — lit chaque `.md` d'un dossier, triés par nom de fichier, la 1re
 ligne `# Titre` devient le titre de la leçon, le reste le contenu. Upsert par
 (slug du tutoriel, ordre de la leçon) : rejouable après une édition du
-contenu source sans dupliquer de lignes.
+contenu source sans dupliquer de lignes ; une leçon dont le fichier a disparu
+est supprimée.
 
 Usage (dans le conteneur backend, même pattern que scripts/migrate.py) :
     python -m scripts.seed_tutorials --slug operer-gitsky \
@@ -84,6 +85,18 @@ async def seed(
             else:
                 lesson.title = lesson_title
                 lesson.content = content
+
+        # Un fichier supprimé du dossier ne doit pas laisser sa leçon en ligne :
+        # les ordres au-delà du nombre de fichiers sont des restes.
+        stale = (
+            await db.execute(
+                select(Lesson).where(
+                    Lesson.tutorial_id == tutorial.id, Lesson.order > len(files)
+                )
+            )
+        ).scalars().all()
+        for lesson in stale:
+            await db.delete(lesson)
 
         await db.commit()
         return len(files)

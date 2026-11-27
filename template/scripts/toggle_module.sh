@@ -4,7 +4,7 @@
 # (Chap 2/17, round outillage)
 #
 # Usage : ./scripts/toggle_module.sh <module> <on|off>
-#   <module> : clé courte du catalogue (admin, analytics, onboarding,
+#   <module> : clé courte du catalogue (admin, onboarding,
 #              tutorials, security_middleware, i18n, agentic,
 #              monetization_shop, monetization_subscription).
 #              PAS "fleet", "worker" ni "leads" — voir plus bas.

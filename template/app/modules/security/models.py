@@ -1,6 +1,7 @@
 """Modèle du module `security` (Chap 4 / Chap 14).
 
-Contrairement à `analytics` (IP hashée, RGPD), `security` stocke l'IP en clair :
+`security` stocke l'IP en clair (la mesure d'audience, elle, est déléguée à
+Umami, sans IP stockée) :
 les attaquants ne sont pas des utilisateurs légitimes, la traçabilité prime.
 """
 

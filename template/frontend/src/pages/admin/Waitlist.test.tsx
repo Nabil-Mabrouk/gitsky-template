@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Waitlist from "./Waitlist";
 
-// Même mock passthrough que Analytics.test.tsx — voir son commentaire.
+// Même mock passthrough que AdminLayout.test.tsx — voir son commentaire.
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

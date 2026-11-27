@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Maintenance from "./Maintenance";
 
-// Même mock passthrough que Analytics.test.tsx — voir son commentaire.
+// Même mock passthrough que AdminLayout.test.tsx — voir son commentaire.
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

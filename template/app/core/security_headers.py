@@ -1,7 +1,6 @@
 """SecurityHeadersMiddleware — en-têtes de sécurité HTTP sur les réponses API.
 
-Contrairement à SecurityMiddleware (app/modules/security) et TrackingMiddleware
-(app/modules/analytics), ce middleware n'est conditionné par aucun flag
+Contrairement à SecurityMiddleware (app/modules/security), ce middleware n'est conditionné par aucun flag
 MODULE_* : il tourne sur tout déploiement, au même niveau que CORSMiddleware
 (core, Chap 2 §1). CSP volontairement absente — risque de casser le frontend
 sans pouvoir calibrer en direct sur le vrai site (décision round sécurité

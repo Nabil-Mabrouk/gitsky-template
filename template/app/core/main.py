@@ -99,15 +99,6 @@ if settings.module_admin:
 
     app.include_router(admin_router, prefix="/api/admin", tags=["admin"])
 
-if settings.module_analytics:
-    from app.modules.analytics import TrackingMiddleware
-    from app.modules.analytics import router as analytics_router
-
-    app.add_middleware(TrackingMiddleware)
-    app.include_router(
-        analytics_router, prefix="/api/admin/analytics", tags=["analytics"]
-    )
-
 if settings.module_agentic:
     from app.modules.agentic import router as agentic_router
 
@@ -193,7 +184,6 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict:
         "modules": {
             "auth": True,  # core, toujours actif (Chap 2 §1) — jamais un flag.
             "admin": settings.module_admin,
-            "analytics": settings.module_analytics,
             "security_middleware": settings.module_security_middleware,
             "agentic": settings.module_agentic,
             "i18n": settings.module_i18n,

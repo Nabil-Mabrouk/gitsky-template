@@ -1,8 +1,8 @@
 """Extraction de l'IP client réelle derrière Traefik (Chap 14/13).
 
 Bug réel trouvé en prod (dashboard Sécurité, premier vrai déploiement des
-onglets admin) : `security/middleware.py` et `analytics/middleware.py`
-utilisaient tous les deux `request.client.host`, qui est l'IP du pair TCP
+onglets admin) : `security/middleware.py` et l'ancien module analytics (retiré
+le 2026-11-27 au profit d'Umami) utilisaient tous les deux `request.client.host`, qui est l'IP du pair TCP
 direct — Traefik, puisque le backend n'est JAMAIS joignable directement
 (internal-net est `internal: true`, Chap 23 §2.3). Tous les événements de
 sécurité et toutes les visites étaient donc attribués à la même IP interne

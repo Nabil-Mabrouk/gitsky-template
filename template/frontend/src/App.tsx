@@ -15,7 +15,6 @@ import ProjectActions from "./pages/admin/ProjectActions";
 import Leads from "./pages/admin/Leads";
 import ProjectLeads from "./pages/admin/ProjectLeads";
 import Maintenance from "./pages/admin/Maintenance";
-import Analytics from "./pages/admin/Analytics";
 import Security from "./pages/admin/Security";
 import Users from "./pages/admin/Users";
 import Waitlist from "./pages/admin/Waitlist";
@@ -86,7 +85,6 @@ function AppShell() {
                 <Route path="maintenance" element={<Maintenance />} />
                 <Route path="users" element={<Users />} />
                 <Route path="waitlist" element={<Waitlist />} />
-                <Route path="analytics" element={<Analytics />} />
                 <Route path="security" element={<Security />} />
               </Route>
             </Route>

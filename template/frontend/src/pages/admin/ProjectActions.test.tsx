@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProjectActions from "./ProjectActions";
 
-// Même mock passthrough que Analytics.test.tsx — voir son commentaire.
+// Même mock passthrough que AdminLayout.test.tsx — voir son commentaire.
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

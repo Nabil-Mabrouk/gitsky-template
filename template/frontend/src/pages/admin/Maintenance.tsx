@@ -6,7 +6,8 @@ import { apiFetch } from "../../api";
 // (backup-fleet.sh, test-restore-fleet.sh, fleet-disk.sh, tous postés via
 // POST /api/fleet/maintenance/report) + rappel de la planification actuelle.
 //
-// Le bloc planification est STATIQUE (recopié de MAINTENANCE.md), pas lu en
+// Le bloc planification est STATIQUE (recopié du guide d'exploitation,
+// docs/exploitation/05-maintenance-de-la-flotte.md du monorepo), pas lu en
 // direct depuis crontab.fleet : ce fichier vit sur l'hôte, hors de portée du
 // conteneur fleet-dashboard, et changer la fréquence reste volontairement un
 // geste serveur (`crontab crontab.fleet`), pas une action dashboard — donner

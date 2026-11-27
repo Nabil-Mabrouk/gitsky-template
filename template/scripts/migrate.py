@@ -23,11 +23,6 @@ _CORE = ("alembic", "alembic/core", "alembic_version_core")
 
 # flag MODULE_* -> (section, dossier, table de version).
 _MODULE_CHAINS: dict[str, tuple[str, str, str]] = {
-    "module_analytics": (
-        "analytics",
-        "alembic/modules/analytics",
-        "alembic_version_analytics",
-    ),
     "module_tutorials": (
         "tutorials",
         "alembic/modules/tutorials",

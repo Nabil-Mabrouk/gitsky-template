@@ -17,7 +17,6 @@ from copier_template_extensions import ContextHook
 
 MODULE_FLAGS: tuple[str, ...] = (
     "module_admin",
-    "module_analytics",
     "module_onboarding",
     "module_tutorials",
     "module_security_middleware",

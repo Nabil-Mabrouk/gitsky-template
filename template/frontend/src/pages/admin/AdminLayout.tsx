@@ -30,7 +30,6 @@ const TABS: Tab[] = [
   { key: "maintenance", labelKey: "admin.tabs.maintenance", path: "/admin/maintenance", moduleFlag: "fleet" },
   { key: "users", labelKey: "admin.tabs.users", path: "/admin/users", moduleFlag: "admin" },
   { key: "waitlist", labelKey: "admin.tabs.waitlist", path: "/admin/waitlist", moduleFlag: "admin" },
-  { key: "analytics", labelKey: "admin.tabs.analytics", path: "/admin/analytics", moduleFlag: "analytics" },
   { key: "security", labelKey: "admin.tabs.security", path: "/admin/security", moduleFlag: "security_middleware" },
   { key: "tutorials", labelKey: "admin.tabs.tutorials", path: "/learn", moduleFlag: "tutorials" },
   // Distinct de l'onglet "leads" ci-dessus (fleet, cross-projets) : celui-ci
@@ -38,15 +37,37 @@ const TABS: Tab[] = [
   { key: "projectLeads", labelKey: "admin.tabs.projectLeads", path: "/admin/project-leads", moduleFlag: "leads" },
 ];
 
+// Mesure d'audience : déléguée à l'instance Umami partagée (Chap 13), qui a
+// remplacé l'ancien onglet Analytics maison le 2026-11-27. Lien externe vers
+// le tableau de bord Umami, affiché seulement quand /health expose la config
+// `umami` (UMAMI_SCRIPT_URL posé sur le serveur) — l'URL du tableau de bord
+// est l'origine du script de suivi (https://stats.<domaine>/s.js).
+export function umamiDashboardUrl(health: unknown): string | null {
+  const scriptUrl = (health as { umami?: { script_url?: unknown } } | null)?.umami?.script_url;
+  if (typeof scriptUrl !== "string") return null;
+  try {
+    const url = new URL(scriptUrl);
+    return url.protocol === "https:" ? url.origin : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function AdminLayout() {
   const { t } = useTranslation();
   const location = useLocation();
   const [modules, setModules] = useState<Record<string, boolean> | null>(null);
+  const [audienceUrl, setAudienceUrl] = useState<string | null>(null);
 
   useEffect(() => {
     apiFetch("/api/admin/modules").then(async (r) => {
       if (r.ok) setModules((await r.json()) as Record<string, boolean>);
     });
+    apiFetch("/health")
+      .then(async (r) => (r.ok ? setAudienceUrl(umamiDashboardUrl(await r.json())) : null))
+      .catch(() => {
+        // Lien optionnel : une panne de /health ne doit pas casser l'admin.
+      });
   }, []);
 
   const visibleTabs = TABS.filter((tab) => modules?.[tab.moduleFlag]);
@@ -66,6 +87,16 @@ export default function AdminLayout() {
               {t(tab.labelKey)}
             </Link>
           ))}
+          {audienceUrl && (
+            <a
+              href={audienceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="admin-nav-link"
+            >
+              {t("admin.tabs.audience")}
+            </a>
+          )}
         </nav>
       </aside>
       <main className="flex-1 p-6 md:p-8">

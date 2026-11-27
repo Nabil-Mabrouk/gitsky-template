@@ -19,7 +19,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # au même titre que le SEO.
 MODULE_FLAGS: tuple[str, ...] = (
     "module_admin",
-    "module_analytics",
     "module_onboarding",
     "module_tutorials",
     "module_security_middleware",
@@ -111,7 +110,6 @@ class Settings(BaseSettings):
     # Catalogue de modules à plat (Chap 2) : chaque flag est un booléen
     # indépendant, False par défaut — aucun profil ne le pré-remplit.
     module_admin: bool = False
-    module_analytics: bool = False
     module_onboarding: bool = False
     module_tutorials: bool = False
     module_security_middleware: bool = False

@@ -77,7 +77,7 @@
       "maintenance": "Maintenance",
       "users": "Utilisateurs",
       "waitlist": "Waitlist",
-      "analytics": "Analytics",
+      "audience": "Audience ↗",
       "security": "Sécurité",
       "tutorials": "Tutoriels",
       "projectLeads": "Mes leads"
@@ -154,25 +154,6 @@
       "sent": "Envoyé",
       "columns": {
         "email": "Email"
-      }
-    },
-    "analytics": {
-      "title": "Analytics",
-      "loading": "Chargement…",
-      "empty": "Aucune donnée pour l'instant.",
-      "error": "Impossible de charger les données.",
-      "visits": "Visites",
-      "world": {
-        "title": "Visites par pays",
-        "country": "Pays"
-      },
-      "paths": {
-        "title": "Pages les plus visitées",
-        "path": "Page"
-      },
-      "timeline": {
-        "title": "Visites par jour",
-        "date": "Date"
       }
     },
     "security": {

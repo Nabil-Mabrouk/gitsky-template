@@ -27,7 +27,7 @@ function renderPage() {
   );
 }
 
-const CATALOG = ["admin", "analytics", "agentic"];
+const CATALOG = ["admin", "tutorials", "agentic"];
 
 describe("CreateProject", () => {
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe("CreateProject", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("admin")).toBeInTheDocument());
-    expect(screen.getByText("analytics")).toBeInTheDocument();
+    expect(screen.getByText("tutorials")).toBeInTheDocument();
     expect(screen.getByText("agentic")).toBeInTheDocument();
   });
 
